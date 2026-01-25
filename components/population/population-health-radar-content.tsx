@@ -1,15 +1,17 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Card } from '@/components/ui/card';
-import { DistrictMap } from './district-map';
-import { SyndromeFilter } from './syndrome-filter';
-import { TimeSlider } from './time-slider';
-import { AlertsPanel } from './alerts-panel';
-import { SituationReport } from './situation-report';
+import React, { useState } from "react";
+import { Card } from "@/components/ui/card";
+import { DistrictMap } from "./district-map";
+import { SyndromeFilter } from "./syndrome-filter";
+import { TimeSlider } from "./time-slider";
+import { AlertsPanel } from "./alerts-panel";
+import { SituationReport } from "./situation-report";
+import { useLanguage } from "@/contexts/language-context";
 
 export function PopulationHealthRadarContent() {
-  const [selectedSyndrome, setSelectedSyndrome] = useState('all');
+  const { t } = useLanguage();
+  const [selectedSyndrome, setSelectedSyndrome] = useState("all");
   const [timeRange, setTimeRange] = useState(24); // hours
   const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
 
@@ -18,11 +20,9 @@ export function PopulationHealthRadarContent() {
       {/* Page Header */}
       <div>
         <h1 className="text-4xl font-bold text-foreground">
-          JanSwasthyaWatch: Population Health Radar
+          {t("population.title")}
         </h1>
-        <p className="mt-2 text-muted-foreground">
-          Real-time epidemiological surveillance & AI-detected anomaly detection across districts
-        </p>
+        <p className="mt-2 text-muted-foreground">{t("population.subtitle")}</p>
       </div>
 
       {/* Controls Bar */}
@@ -44,19 +44,25 @@ export function PopulationHealthRadarContent() {
         <Card className="p-6">
           <div className="space-y-3">
             <div className="text-xs font-semibold text-muted-foreground">
-              SURVEILLANCE SUMMARY
+              {t("population.surveillance.summary")}
             </div>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Districts Active</span>
+                <span className="text-sm text-muted-foreground">
+                  {t("population.districts.active")}
+                </span>
                 <span className="font-bold text-foreground">6/6</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Total Cases</span>
+                <span className="text-sm text-muted-foreground">
+                  {t("population.total.cases")}
+                </span>
                 <span className="font-bold text-foreground">156</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Alerts</span>
+                <span className="text-sm text-muted-foreground">
+                  {t("population.alerts")}
+                </span>
                 <span className="font-bold text-error">4</span>
               </div>
             </div>
@@ -70,7 +76,7 @@ export function PopulationHealthRadarContent() {
         <div className="lg:col-span-2">
           <Card className="p-6">
             <h3 className="font-semibold text-foreground mb-4">
-              District-Level Heat Map
+              {t("population.district.map")}
             </h3>
             <DistrictMap
               selectedSyndrome={selectedSyndrome}
@@ -83,10 +89,7 @@ export function PopulationHealthRadarContent() {
 
         {/* Alerts Panel */}
         <div>
-          <AlertsPanel
-            syndrome={selectedSyndrome}
-            timeRange={timeRange}
-          />
+          <AlertsPanel syndrome={selectedSyndrome} timeRange={timeRange} />
         </div>
       </div>
 

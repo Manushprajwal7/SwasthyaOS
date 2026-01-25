@@ -1,15 +1,17 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Clock, CheckCircle, AlertCircle } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import React from "react";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Clock, User, Activity } from "lucide-react";
+import { useLanguage } from "@/contexts/language-context";
 
 interface ConsultationCardProps {
   patientId: string;
   patientName: string;
   age: number;
   reason: string;
-  status: 'completed' | 'in-progress' | 'pending';
+  status: "completed" | "in-progress" | "pending";
   time: string;
   confidence: number;
 }
@@ -23,67 +25,68 @@ export function ConsultationCard({
   time,
   confidence,
 }: ConsultationCardProps) {
-  const statusConfig = {
-    completed: {
-      icon: CheckCircle,
-      label: 'Completed',
-      color: 'text-success',
-      bgColor: 'bg-success/10',
-    },
-    'in-progress': {
-      icon: Clock,
-      label: 'In Progress',
-      color: 'text-accent',
-      bgColor: 'bg-accent/10',
-    },
-    pending: {
-      icon: AlertCircle,
-      label: 'Pending',
-      color: 'text-warning',
-      bgColor: 'bg-warning/10',
-    },
+  const { t } = useLanguage();
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "bg-success/10 text-success border-success/20";
+      case "in-progress":
+        return "bg-warning/10 text-warning border-warning/20";
+      case "pending":
+        return "bg-muted text-muted-foreground border-border";
+      default:
+        return "bg-muted text-muted-foreground border-border";
+    }
   };
 
-  const config = statusConfig[status];
-  const StatusIcon = config.icon;
+  const getConfidenceColor = (confidence: number) => {
+    if (confidence >= 90) return "text-success";
+    if (confidence >= 70) return "text-warning";
+    return "text-error";
+  };
+
+  const getStatusText = (status: string) => {
+    return t(`common.${status.replace("-", "-")}` as keyof typeof t);
+  };
 
   return (
-    <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
-      <div className="flex items-start justify-between gap-4">
+    <Card className="p-4 hover:shadow-md transition-shadow">
+      <div className="flex items-start justify-between">
         <div className="flex-1">
-          <div className="flex items-baseline gap-2">
-            <h4 className="font-semibold text-foreground">{patientName}</h4>
-            <span className="text-xs text-muted-foreground">{age}y</span>
-            <span className="text-xs font-mono text-muted-foreground">
+          <div className="flex items-center gap-2 mb-2">
+            <User className="h-4 w-4 text-muted-foreground" />
+            <span className="font-semibold text-foreground">{patientName}</span>
+            <span className="text-sm text-muted-foreground">({age}y)</span>
+            <Badge variant="outline" className="text-xs">
               {patientId}
-            </span>
-          </div>
-          <p className="mt-1 text-sm text-foreground">{reason}</p>
-          <p className="mt-2 text-xs text-muted-foreground">{time}</p>
-        </div>
-
-        <div className="flex flex-col items-end gap-2">
-          <div className={`flex items-center gap-1 rounded-full px-2 py-1 ${config.bgColor}`}>
-            <StatusIcon className={`h-3 w-3 ${config.color}`} />
-            <span className={`text-xs font-medium ${config.color}`}>
-              {config.label}
-            </span>
+            </Badge>
           </div>
 
-          {confidence > 0 && (
-            <div className="text-right">
-              <div className="text-xs font-semibold text-foreground">
-                {confidence}% Conf.
-              </div>
-              <div className="mt-0.5 h-1 w-12 rounded-full bg-muted overflow-hidden">
-                <div
-                  className="h-full bg-primary"
-                  style={{ width: `${confidence}%` }}
-                />
-              </div>
+          <p className="text-sm text-muted-foreground mb-3">{reason}</p>
+
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1">
+              <Clock className="h-3 w-3 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">{time}</span>
             </div>
-          )}
+
+            {confidence > 0 && (
+              <div className="flex items-center gap-1">
+                <Activity className="h-3 w-3 text-muted-foreground" />
+                <span
+                  className={`text-xs font-medium ${getConfidenceColor(confidence)}`}
+                >
+                  {confidence}% {t("common.confidence")}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
+
+        <Badge className={getStatusColor(status)}>
+          {getStatusText(status)}
+        </Badge>
       </div>
     </Card>
   );

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 import {
   TrendingUp,
   AlertCircle,
@@ -8,22 +8,25 @@ import {
   Clock,
   Users,
   Activity,
-} from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { ConsultationCard } from './consultation-card';
-import { AlertPanel } from './alert-panel';
-import { HealthSignalsMap } from './health-signals-map';
-import { SystemTrustStatus } from './system-trust-status';
+} from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { ConsultationCard } from "./consultation-card";
+import { AlertPanel } from "./alert-panel";
+import { HealthSignalsMap } from "./health-signals-map";
+import { SystemTrustStatus } from "./system-trust-status";
+import { useLanguage } from "@/contexts/language-context";
 
 export function DashboardContent() {
+  const { t } = useLanguage();
+
   return (
     <div className="space-y-6 p-8">
       {/* Page Header */}
       <div>
-        <h1 className="text-4xl font-bold text-foreground">Dashboard</h1>
-        <p className="mt-2 text-muted-foreground">
-          Clinical situational overview & AI-powered health intelligence
-        </p>
+        <h1 className="text-4xl font-bold text-foreground">
+          {t("dashboard.title")}
+        </h1>
+        <p className="mt-2 text-muted-foreground">{t("dashboard.subtitle")}</p>
       </div>
 
       {/* KPI Cards Grid */}
@@ -33,10 +36,12 @@ export function DashboardContent() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">
-                Today's Consultations
+                {t("dashboard.consultations.today")}
               </p>
               <p className="mt-2 text-3xl font-bold text-foreground">24</p>
-              <p className="mt-1 text-xs text-success">↑ 12% from yesterday</p>
+              <p className="mt-1 text-xs text-success">
+                ↑ 12% from {t("time.yesterday")}
+              </p>
             </div>
             <Activity className="h-8 w-8 text-primary/20" />
           </div>
@@ -47,7 +52,7 @@ export function DashboardContent() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">
-                Pending Documentation
+                {t("dashboard.consultations.pending")}
               </p>
               <p className="mt-2 text-3xl font-bold text-foreground">7</p>
               <p className="mt-1 text-xs text-muted-foreground">
@@ -63,11 +68,11 @@ export function DashboardContent() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">
-                AI Alerts Generated
+                {t("dashboard.alerts.generated")}
               </p>
               <p className="mt-2 text-3xl font-bold text-foreground">3</p>
               <p className="mt-1 text-xs text-warning">
-                2 high confidence
+                2 {t("common.high")} {t("common.confidence")}
               </p>
             </div>
             <AlertCircle className="h-8 w-8 text-warning/20" />
@@ -79,13 +84,13 @@ export function DashboardContent() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">
-                System Status
+                {t("dashboard.system.status")}
               </p>
               <p className="mt-2 text-3xl font-bold text-foreground">
                 <span className="text-success">94%</span>
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                AI Model Accuracy
+                {t("dashboard.system.accuracy")}
               </p>
             </div>
             <CheckCircle className="h-8 w-8 text-success/20" />
@@ -102,9 +107,11 @@ export function DashboardContent() {
             <div className="flex items-center gap-3">
               <AlertCircle className="h-6 w-6 text-error" />
               <div>
-                <h3 className="font-semibold text-foreground">System Alerts</h3>
+                <h3 className="font-semibold text-foreground">
+                  {t("dashboard.alerts.title")}
+                </h3>
                 <p className="text-sm text-muted-foreground">
-                  3 alerts pending review
+                  3 {t("dashboard.alerts.pending")}
                 </p>
               </div>
             </div>
@@ -129,7 +136,7 @@ export function DashboardContent() {
           {/* Recent Consultations */}
           <div>
             <h3 className="mb-4 font-semibold text-foreground">
-              Recent Consultations
+              {t("dashboard.consultations.recent")}
             </h3>
             <div className="space-y-3">
               <ConsultationCard
@@ -156,75 +163,34 @@ export function DashboardContent() {
                 age={45}
                 reason="Post-Surgery Assessment"
                 status="pending"
-                time="Scheduled"
+                time={t("time.scheduled")}
                 confidence={0}
               />
             </div>
           </div>
+
+          {/* System Trust Status - Rectangular Layout */}
+          <Card className="p-6">
+            <h3 className="mb-4 font-semibold text-foreground">
+              {t("dashboard.trust.score")}
+            </h3>
+            <SystemTrustStatus />
+          </Card>
         </div>
 
-        {/* Right Column: Health Radar & Trust Status */}
+        {/* Right Column: Health Radar */}
         <div className="space-y-6">
           {/* Population Health Signals */}
           <Card className="p-6">
             <h3 className="mb-4 font-semibold text-foreground">
-              Regional Health Signals
+              {t("dashboard.health.signals")}
             </h3>
             <HealthSignalsMap />
-          </Card>
-
-          {/* System Trust Status */}
-          <Card className="p-6">
-            <h3 className="mb-4 font-semibold text-foreground">
-              AI System Trust Score
-            </h3>
-            <SystemTrustStatus />
-          </Card>
-
-          {/* Quick Stats */}
-          <Card className="p-6 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">
-                Data Quality
-              </span>
-              <span className="font-semibold text-foreground">98%</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">
-                Active Patients
-              </span>
-              <span className="font-semibold text-foreground">156</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">
-                System Uptime
-              </span>
-              <span className="font-semibold text-foreground">99.8%</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">
-                AI Model Version
-              </span>
-              <span className="font-semibold text-foreground">v2.1.4</span>
-            </div>
           </Card>
         </div>
       </div>
 
       {/* Empty State Info */}
-      <Card className="border-l-4 border-l-success bg-success/5 p-6">
-        <div className="flex items-start gap-3">
-          <CheckCircle className="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
-          <div>
-            <h4 className="font-semibold text-foreground">
-              ✓ No critical incidents detected
-            </h4>
-            <p className="mt-1 text-sm text-muted-foreground">
-              System monitoring continues. All healthcare workers are actively serving patients.
-            </p>
-          </div>
-        </div>
-      </Card>
     </div>
   );
 }

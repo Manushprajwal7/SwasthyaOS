@@ -1,15 +1,11 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import {
-  Bell,
-  Globe,
-  User,
-  LogOut,
-  Lightbulb,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import type { UserRole } from './main-layout';
+import React, { useState } from "react";
+import { Bell, Globe, User, LogOut, Lightbulb } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/language-context";
+import { languages } from "@/lib/i18n";
+import type { UserRole } from "./main-layout";
 
 interface TopBarProps {
   userRole: UserRole;
@@ -17,25 +13,18 @@ interface TopBarProps {
   onShowRightPanel: (show: boolean) => void;
 }
 
-const roleLabels: Record<UserRole, string> = {
-  doctor: 'Dr. Rajesh Kumar',
-  frontline: 'ASHA Worker - Priya',
-  admin: 'Public Health Officer',
-};
-
-const languageOptions = [
-  { code: 'en', label: 'English' },
-  { code: 'hi', label: 'हिन्दी' },
-];
-
-export function TopBar({ userRole, onRoleChange, onShowRightPanel }: TopBarProps) {
-  const [currentLanguage, setCurrentLanguage] = useState('en');
+export function TopBar({
+  userRole,
+  onRoleChange,
+  onShowRightPanel,
+}: TopBarProps) {
+  const { language, setLanguage, t } = useLanguage();
   const [showRoleMenu, setShowRoleMenu] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [notificationCount, setNotificationCount] = useState(3);
 
-  const roles: UserRole[] = ['doctor', 'frontline', 'admin'];
+  const roles: UserRole[] = ["doctor", "frontline", "admin"];
 
   return (
     <div className="flex items-center justify-between border-b border-border bg-card px-6 py-4">
@@ -43,14 +32,16 @@ export function TopBar({ userRole, onRoleChange, onShowRightPanel }: TopBarProps
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
           <div className="h-2 w-2 rounded-full bg-success" />
-          <span className="text-sm text-muted-foreground">System Active</span>
+          <span className="text-sm text-muted-foreground">
+            {t("system.active")}
+          </span>
         </div>
 
         {/* Notifications */}
         <button
           onClick={() => setNotificationCount(0)}
           className="relative rounded-lg p-2 hover:bg-muted"
-          aria-label="Notifications"
+          aria-label={t("system.notifications")}
         >
           <Bell className="h-5 w-5 text-muted-foreground" />
           {notificationCount > 0 && (
@@ -67,10 +58,12 @@ export function TopBar({ userRole, onRoleChange, onShowRightPanel }: TopBarProps
         <button
           onClick={() => onShowRightPanel(true)}
           className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-muted"
-          title="Show AI Explanation Panel"
+          title={t("system.ai.insights")}
         >
           <Lightbulb className="h-4 w-4 text-accent" />
-          <span className="hidden sm:inline text-muted-foreground">AI Insights</span>
+          <span className="hidden sm:inline text-muted-foreground">
+            {t("system.ai.insights")}
+          </span>
         </button>
 
         {/* Language Selector */}
@@ -84,20 +77,30 @@ export function TopBar({ userRole, onRoleChange, onShowRightPanel }: TopBarProps
             className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm hover:bg-muted"
           >
             <Globe className="h-4 w-4" />
-            {currentLanguage.toUpperCase()}
+            {language.toUpperCase()}
           </button>
           {showLanguageMenu && (
-            <div className="absolute right-0 z-50 mt-2 w-32 rounded-lg border border-border bg-card shadow-lg">
-              {languageOptions.map((lang) => (
+            <div className="absolute right-0 z-50 mt-2 w-48 rounded-lg border border-border bg-card shadow-lg max-h-96 overflow-y-auto">
+              {languages.map((lang) => (
                 <button
                   key={lang.code}
                   onClick={() => {
-                    setCurrentLanguage(lang.code);
+                    setLanguage(lang.code);
                     setShowLanguageMenu(false);
                   }}
-                  className="block w-full px-4 py-2 text-left text-sm hover:bg-muted"
+                  className={`block w-full px-4 py-2 text-left text-sm hover:bg-muted ${
+                    language === lang.code ? "bg-primary/10 font-semibold" : ""
+                  }`}
                 >
-                  {lang.label}
+                  <div className="flex items-center justify-between">
+                    <span>{lang.nativeName}</span>
+                    {language === lang.code && (
+                      <span className="text-primary">✓</span>
+                    )}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {lang.name}
+                  </div>
                 </button>
               ))}
             </div>
@@ -115,12 +118,14 @@ export function TopBar({ userRole, onRoleChange, onShowRightPanel }: TopBarProps
             className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-muted"
           >
             <User className="h-4 w-4" />
-            <span className="hidden sm:inline">{roleLabels[userRole].split(' - ')[0]}</span>
+            <span className="hidden sm:inline">
+              {t(`role.${userRole}` as keyof typeof t).split(" - ")[0]}
+            </span>
           </button>
           {showRoleMenu && (
             <div className="absolute right-0 z-50 mt-2 w-56 rounded-lg border border-border bg-card shadow-lg">
               <div className="px-4 py-2 text-xs font-semibold text-muted-foreground">
-                SWITCH ROLE
+                {t("role.switch")}
               </div>
               {roles.map((role) => (
                 <button
@@ -131,12 +136,16 @@ export function TopBar({ userRole, onRoleChange, onShowRightPanel }: TopBarProps
                   }}
                   className={`block w-full px-4 py-2 text-left text-sm ${
                     userRole === role
-                      ? 'bg-primary text-primary-foreground'
-                      : 'hover:bg-muted'
+                      ? "bg-primary text-primary-foreground"
+                      : "hover:bg-muted"
                   }`}
                 >
-                  <div className="font-medium">{roleLabels[role].split(' - ')[0]}</div>
-                  <div className="text-xs opacity-75">{roleLabels[role]}</div>
+                  <div className="font-medium">
+                    {t(`role.${role}` as keyof typeof t).split(" - ")[0]}
+                  </div>
+                  <div className="text-xs opacity-75">
+                    {t(`role.${role}` as keyof typeof t)}
+                  </div>
                 </button>
               ))}
             </div>
@@ -160,13 +169,15 @@ export function TopBar({ userRole, onRoleChange, onShowRightPanel }: TopBarProps
           {showUserMenu && (
             <div className="absolute right-0 z-50 mt-2 w-48 rounded-lg border border-border bg-card shadow-lg">
               <div className="px-4 py-2 text-sm">
-                <p className="font-semibold">{roleLabels[userRole]}</p>
+                <p className="font-semibold">
+                  {t(`role.${userRole}` as keyof typeof t)}
+                </p>
                 <p className="text-xs text-muted-foreground">Active User</p>
               </div>
               <div className="border-t border-border px-4 py-2">
                 <button className="flex w-full items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
                   <LogOut className="h-4 w-4" />
-                  Sign Out
+                  {t("system.sign.out")}
                 </button>
               </div>
             </div>
