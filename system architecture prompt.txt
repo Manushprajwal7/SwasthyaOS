@@ -1,0 +1,300 @@
+╔══════════════════════════════════════════════════════════════════════════════════╗
+║         SWASTHYAOS v2 — COMPLETE SYSTEM ARCHITECTURE PROMPT                    ║
+║         AWS AI for Bharat Hackathon | Professional Track                       ║
+║         Healthcare & Life Sciences | Production-Grade Specification            ║
+╚══════════════════════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1: ARCHITECTURE OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SwasthyaOS is a cloud-native, AI-first healthcare operating system built entirely
+on AWS infrastructure, anchored in the ap-south-1 (Mumbai) region for India data
+residency compliance under the DPDP Act 2023.
+
+The architecture follows a three-tier layered model:
+
+  LAYER 1 — PRESENTATION (Frontend)
+  LAYER 2 — INTELLIGENCE (AWS AI/ML Services)
+  LAYER 3 — DATA (FHIR + Storage + Streaming)
+
+All layers communicate through secure API Gateway endpoints with Cognito-based
+JWT authorization. Every AI decision is logged to an immutable audit trail.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2: AWS SERVICES ARCHITECTURE MAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        FRONTEND LAYER (Next.js)                             │
+│   React + TypeScript + Tailwind + shadcn/ui + Framer Motion                 │
+│   Hosted: AWS Amplify (ap-south-1) + CloudFront CDN                         │
+└──────────────────────────┬──────────────────────────────────────────────────┘
+                           │ HTTPS / WSS
+                           ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    API GATEWAY + COGNITO AUTH LAYER                         │
+│   Amazon API Gateway (REST + WebSocket)                                     │
+│   Amazon Cognito (Role-based: Doctor / ASHA / PHO)                          │
+│   AWS WAF (Healthcare-grade request filtering)                               │
+└──────┬───────────────┬────────────────┬───────────────┬─────────────────────┘
+       │               │                │               │
+       ▼               ▼                ▼               ▼
+┌──────────┐  ┌────────────────┐  ┌──────────┐  ┌────────────────────────┐
+│  BEDROCK │  │  TRANSCRIBE    │  │ COMPREHD │  │    HEALTHLAKE          │
+│  LAYER   │  │  MEDICAL       │  │ MEDICAL  │  │    (FHIR R4)           │
+│          │  │                │  │          │  │                        │
+│ Claude 3 │  │ Real-time STT  │  │ NLP/NER  │  │ Patient Records        │
+│ Sonnet   │  │ Medical vocab  │  │ ICD-10   │  │ Clinical Documents     │
+│          │  │ Speaker diar.  │  │ Rx detect│  │ Observation Resources  │
+│ SOAP AI  │  │ Noise filter   │  │ Drug-drug│  │ Encounter Resources    │
+│ Dx Sugg  │  │                │  │ interact.│  │ Condition Resources    │
+│ Risk Scr │  │                │  │          │  │                        │
+└──────────┘  └────────────────┘  └──────────┘  └────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│                    ANALYTICS & ML LAYER                                  │
+├────────────────┬───────────────────┬────────────────┬────────────────────┤
+│  KINESIS DATA  │   SAGEMAKER       │  QUICKSIGHT    │  REKOGNITION       │
+│  STREAMS       │                   │                │  MEDICAL           │
+│                │  Anomaly Detect.  │  Embedded dash │                    │
+│  Real-time     │  SageMaker Canvas │  Population    │  X-ray analysis    │
+│  syndromic     │  Forecast         │  health charts │  Wound assessment  │
+│  surveillance  │  Custom models    │  District maps │  (placeholder)     │
+│  Event proc.   │  Model Monitor    │                │                    │
+└────────────────┴───────────────────┴────────────────┴────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│                      DATA & STORAGE LAYER                                │
+├────────────────┬───────────────┬─────────────────┬────────────────────  ┤
+│   S3           │  DYNAMODB     │  ELASTICACHE    │  OPENSEARCH           │
+│                │               │  (Redis)        │  SERVICE              │
+│  Clinical docs │  Session data │                 │                       │
+│  Audit exports │  Audit logs   │  API response   │  Full-text clinical   │
+│  FHIR bundles  │  Alert state  │  cache          │  search               │
+│  Reports       │  User prefs   │  Rate limiting  │  ICD/SNOMED search    │
+│  KMS encrypted │               │                 │                       │
+└────────────────┴───────────────┴─────────────────┴───────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│                    SECURITY & COMPLIANCE LAYER                           │
+├────────────────┬─────────────────┬──────────────────┬────────────────────┤
+│  AWS KMS       │  CLOUDTRAIL     │  AWS MACIE       │  AWS SHIELD        │
+│                │                 │                  │                    │
+│  Encryption    │  Full API audit │  PII detection   │  DDoS protection   │
+│  Key rotation  │  Tamper-proof   │  Data scanning   │  Healthcare SLA    │
+│  BYOK support  │  log integrity  │  DPDP compliance │  99.99% uptime     │
+└────────────────┴─────────────────┴──────────────────┴────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3: DATA FLOW ARCHITECTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FLOW A: CLINICAL CONSULTATION PIPELINE
+
+  Doctor speaks →
+  [Transcribe Medical] (real-time stream, <300ms latency) →
+  Raw transcript chunks →
+  [Comprehend Medical] (NER: symptoms, Rx, diagnoses, procedures) →
+  Structured clinical entities →
+  [Bedrock Claude 3 Sonnet] (SOAP note generation, ICD suggestion) →
+  AI-drafted clinical note + suggestions →
+  Doctor reviews + accepts/edits/rejects →
+  [HealthLake] FHIR Encounter resource written →
+  [CloudTrail] full decision audit logged →
+  [DynamoDB] session state updated
+
+FLOW B: RURAL TRIAGE PIPELINE (AarogyaPath)
+
+  ASHA/ANM inputs vitals + symptoms (voice/touch) →
+  [Transcribe Medical] (Hindi/regional language STT) →
+  [Amazon Translate] (regional → English for processing) →
+  [Comprehend Medical] (entity extraction) →
+  [Bedrock] (clinical reasoning chain-of-thought generation) →
+  Step-by-step reasoning trace rendered in UI →
+  Triage decision: Treat / Refer / Emergency →
+  [HealthLake] FHIR ReferralRequest resource generated →
+  QR code + referral slip exported
+
+FLOW C: POPULATION SURVEILLANCE PIPELINE
+
+  PHC daily case reports (mock API) →
+  [Kinesis Data Streams] (real-time ingestion) →
+  [Lambda] (aggregation per district, per syndrome, per day) →
+  [SageMaker] Anomaly Detection endpoint →
+  Anomaly scores per district →
+  [DynamoDB] alert state written →
+  WebSocket push → Frontend alert feed →
+  [Bedrock] auto-generate situation report narrative →
+  [SageMaker Forecast] 14-day projection →
+  CMO notification trigger (SNS mock)
+
+FLOW D: AUDIT & COMPLIANCE PIPELINE
+
+  Every AI inference →
+  [CloudTrail] API call logged (immutable) →
+  [DynamoDB] structured audit record:
+    {
+      timestamp, patientToken, modelId, inputHash,
+      outputSummary, confidenceScore, humanAction,
+      sessionId, roleType, dataRegion
+    }
+  →
+  [Macie] PII scan on all stored data →
+  SHA-256 integrity hash generated →
+  Audit export available as CSV / FHIR AuditEvent resource
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 4: FHIR R4 DATA MODEL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+All clinical data follows HL7 FHIR R4 spec stored in AWS HealthLake.
+Resource types used:
+
+  Patient            — Demographics, UHID, district, language
+  Encounter          — Each consultation session
+  Observation        — Vitals, lab values, SpO2, BP
+  Condition          — Diagnoses with ICD-10 codes
+  MedicationRequest  — Prescriptions with dosage
+  DiagnosticReport   — Lab/imaging results
+  ReferralRequest    — AarogyaPath referral slips
+  AuditEvent         — AI decision logs (FHIR-native audit)
+  Composition        — Discharge summaries
+  List               — Patient timelines
+
+Sample Patient Resource:
+{
+  "resourceType": "Patient",
+  "id": "pt-MH-20240312-8821",
+  "meta": {
+    "profile": ["http://swasthyaos.in/fhir/StructureDefinition/SwasthyaPatient"],
+    "security": [{"system": "http://terminology.hl7.org/CodeSystem/v3-Confidentiality", "code": "R"}]
+  },
+  "identifier": [
+    {"system": "urn:swasthyaos:uhid", "value": "UHID-MH-88210"},
+    {"system": "urn:in:abha", "value": "12-3456-7890-0001"}
+  ],
+  "name": [{"text": "Ramesh Kumar", "family": "Kumar", "given": ["Ramesh"]}],
+  "birthDate": "1957-03-15",
+  "gender": "male",
+  "address": [{"district": "Nagpur", "state": "Maharashtra", "country": "IN"}],
+  "communication": [{"language": {"coding": [{"code": "hi", "display": "Hindi"}]}, "preferred": true}]
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 5: SECURITY & COMPLIANCE ARCHITECTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+AUTHENTICATION & AUTHORIZATION:
+  - Amazon Cognito User Pools (role-based: Doctor / ASHA / PHO / Admin)
+  - JWT tokens with 1-hour expiry, refresh token rotation
+  - MFA enforced for Doctor and PHO roles
+  - Attribute-based access control (ABAC) via Cognito Identity Pools
+
+ENCRYPTION:
+  - Data at rest: AES-256 via AWS KMS (CMK per data classification)
+  - Data in transit: TLS 1.3 minimum
+  - HealthLake: KMS-managed FHIR data encryption
+  - S3: SSE-KMS with key rotation every 90 days
+
+COMPLIANCE:
+  - DPDP Act 2023: Data minimization, purpose limitation, consent management
+  - ABDM (Ayushman Bharat Digital Mission): ABHA ID integration
+  - HIPAA-aligned controls (for international audit readiness)
+  - NHP (National Health Policy) data standards
+
+DATA RESIDENCY:
+  - All data stored in ap-south-1 (Mumbai)
+  - No cross-region data transfer without explicit consent
+  - VPC-isolated HealthLake endpoint
+  - Private Link for all AWS service API calls
+
+ANONYMIZATION PIPELINE:
+  - Comprehend Medical PII detection on all outputs
+  - Population health data: k-anonymity (k≥5) before aggregation
+  - Research exports: differential privacy noise injection
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 6: SCALABILITY & INFRASTRUCTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+COMPUTE:
+  - Lambda functions (serverless): triage logic, alert processing, report gen
+  - ECS Fargate: long-running clinical NLP jobs
+  - Auto-scaling: based on consultation queue depth (CloudWatch metrics)
+
+CAPACITY TARGETS:
+  - 10,000 concurrent consultations
+  - 742 districts real-time syndromic surveillance
+  - 1M patient FHIR records
+  - <2s AI suggestion latency (p99)
+  - <300ms transcription chunk latency
+
+DISASTER RECOVERY:
+  - RTO: 4 hours | RPO: 1 hour
+  - HealthLake: automated daily FHIR export to S3
+  - Multi-AZ DynamoDB
+  - CloudFront failover routing
+
+MONITORING:
+  - CloudWatch dashboards: service health, latency, error rates
+  - X-Ray: distributed tracing for AI pipeline
+  - SNS alerts: model drift, anomaly threshold breach, system errors
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 7: AI MODEL ARCHITECTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PRIMARY MODEL: Amazon Bedrock — Claude 3 Sonnet
+  - SOAP note generation from transcript
+  - ICD-10 coding with confidence scores
+  - Discharge summary generation
+  - Situation report narrative
+  - Clinical reasoning chain-of-thought (AarogyaPath)
+
+SPECIALIZED MODELS:
+  - Transcribe Medical: ASR with medical vocabulary (custom vocab: MOHFW drug list)
+  - Comprehend Medical: Named entity recognition (symptoms, Rx, ICD, anatomy)
+  - SageMaker Anomaly Detection: RCFM (Random Cut Forest) for syndromic surveillance
+  - SageMaker Forecast: DeepAR+ for 14-day disease trend projection
+  - Amazon Translate: 12 Indian languages (EN ↔ HI/MR/TA/TE/KN/ML/BN/GU/OR/PA/AS)
+
+RESPONSIBLE AI CONTROLS:
+  - All outputs tagged with confidence score (0.0–1.0)
+  - Low confidence (<0.70) = mandatory human review flag
+  - Model drift monitored via SageMaker Model Monitor
+  - Calibration curves tracked in Audit panel
+  - Human override data fed back to Bedrock fine-tuning pipeline (mock)
+
+PROMPT ENGINEERING STRATEGY:
+  - System prompts include: role context, MOHFW guidelines reference, liability disclaimer
+  - Temperature: 0.1 (clinical, deterministic)
+  - Max tokens: 2048 for SOAP, 4096 for discharge summaries
+  - Structured output via XML tags enforced in prompts
+  - Hallucination reduction: entity grounding against Comprehend Medical output
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 8: COST ARCHITECTURE (INDIA SCALE ESTIMATE)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Monthly estimates at 1,000 daily consultations:
+
+  Bedrock (Claude 3 Sonnet): ~$180/month
+  Transcribe Medical: ~$95/month
+  Comprehend Medical: ~$45/month
+  HealthLake: ~$120/month
+  SageMaker (inference): ~$85/month
+  DynamoDB: ~$30/month
+  S3 + KMS: ~$15/month
+  API Gateway + Lambda: ~$25/month
+  CloudFront: ~$12/month
+  Other (monitoring, WAF, etc.): ~$40/month
+  ─────────────────────────────────────
+  TOTAL ESTIMATED: ~$647/month (~₹54,000/month)
+
+Per-consultation cost at scale: ~₹1.80 per AI-assisted consultation
+Break-even vs. paper-based documentation: 6 months
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+END OF SYSTEM ARCHITECTURE DOCUMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

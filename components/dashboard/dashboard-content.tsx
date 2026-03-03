@@ -1,196 +1,324 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import {
   TrendingUp,
-  AlertCircle,
-  CheckCircle,
+  Bell,
+  Calendar,
   Clock,
+  Stethoscope,
   Users,
   Activity,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { ConsultationCard } from "./consultation-card";
-import { AlertPanel } from "./alert-panel";
-import { HealthSignalsMap } from "./health-signals-map";
-import { SystemTrustStatus } from "./system-trust-status";
+import { AWSBadge } from "@/components/ui/aws-badge";
+import { LivePulse } from "@/components/ui/live-pulse";
 import { useLanguage } from "@/contexts/language-context";
+import { useSimulation } from "@/hooks/use-simulation";
+import { Button } from "@/components/ui/button";
+
+// Import modular dashboard components
+import { QueuePanel } from "./queue-panel";
+import { KpiGrid } from "./kpi-grid";
+import { AIFeed } from "./ai-feed";
+import { SystemTrustStatus } from "./system-trust-status";
 
 export function DashboardContent() {
   const { t } = useLanguage();
+  const {
+    patients,
+    alerts,
+    aiEvents,
+    metrics,
+    acknowledgeAlert,
+    dismissAlert,
+  } = useSimulation({
+    enabled: true,
+    patientArrivalInterval: 10000,
+    alertInterval: 20000,
+    aiEventInterval: 6000,
+    metricUpdateInterval: 4000,
+  });
+
+  // Convert patients to queue format
+  const queuePatients = useMemo(() => {
+    return patients.slice(0, 8).map((p, idx) => ({
+      token: `TK-${String(idx + 1).padStart(3, "0")}`,
+      initials: p.name
+        .split(" ")
+        .map((n) => n[0])
+        .join(""),
+      name: p.name,
+      age: `${p.age}${p.gender}`,
+      complaint: p.chiefComplaint,
+      wait: `${p.waitTime} min`,
+      triage:
+        p.triage === "critical"
+          ? ("red" as const)
+          : p.triage === "urgent"
+          ? ("amber" as const)
+          : ("green" as const),
+      status: p.status,
+      uhid: p.uhid,
+    }));
+  }, [patients]);
+
+  // Convert AI events to alert format for display
+  const aiAlerts = useMemo(() => {
+    return aiEvents.slice(0, 6).map((event) => ({
+      id: event.id,
+      severity:
+        event.type === "alert"
+          ? ("high" as const)
+          : event.type === "insight"
+          ? ("medium" as const)
+          : ("info" as const),
+      time: event.timestamp.toLocaleTimeString("en-IN", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      title: event.message,
+      confidence: event.confidence,
+      service: event.awsService,
+      latency: event.latencyMs,
+    }));
+  }, [aiEvents]);
+
+  // Critical alerts count
+  const criticalAlertCount = useMemo(() => {
+    return alerts.filter((a) => a.severity === "critical" && !a.acknowledged)
+      .length;
+  }, [alerts]);
+
+  const now = new Date();
+  const greeting =
+    now.getHours() < 12
+      ? "Good Morning"
+      : now.getHours() < 17
+      ? "Good Afternoon"
+      : "Good Evening";
+  const dateStr = now.toLocaleDateString("en-IN", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 
   return (
-    <div className="space-y-6 p-8">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-4xl font-bold text-foreground">
-          {t("dashboard.title")}
-        </h1>
-        <p className="mt-2 text-muted-foreground">{t("dashboard.subtitle")}</p>
-      </div>
-
-      {/* KPI Cards Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {/* Today's Consultations */}
-        <Card className="p-6">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">
-                {t("dashboard.consultations.today")}
-              </p>
-              <p className="mt-2 text-3xl font-bold text-foreground">24</p>
-              <p className="mt-1 text-xs text-success">
-                ↑ 12% from {t("time.yesterday")}
-              </p>
-            </div>
-            <Activity className="h-8 w-8 text-primary/20" />
-          </div>
-        </Card>
-
-        {/* Pending Documentation */}
-        <Card className="p-6">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">
-                {t("dashboard.consultations.pending")}
-              </p>
-              <p className="mt-2 text-3xl font-bold text-foreground">7</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Avg 4 min to complete
-              </p>
-            </div>
-            <Clock className="h-8 w-8 text-accent/20" />
-          </div>
-        </Card>
-
-        {/* AI Alerts Generated */}
-        <Card className="p-6">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">
-                {t("dashboard.alerts.generated")}
-              </p>
-              <p className="mt-2 text-3xl font-bold text-foreground">3</p>
-              <p className="mt-1 text-xs text-warning">
-                2 {t("common.high")} {t("common.confidence")}
-              </p>
-            </div>
-            <AlertCircle className="h-8 w-8 text-warning/20" />
-          </div>
-        </Card>
-
-        {/* System Health */}
-        <Card className="p-6">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">
-                {t("dashboard.system.status")}
-              </p>
-              <p className="mt-2 text-3xl font-bold text-foreground">
-                <span className="text-success">94%</span>
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {t("dashboard.system.accuracy")}
-              </p>
-            </div>
-            <CheckCircle className="h-8 w-8 text-success/20" />
-          </div>
-        </Card>
-      </div>
-
-      {/* Main Content Grid */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Left Column: Alerts & Consultations */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Critical Alerts */}
-          <Card className="border-l-4 border-l-error p-6">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="h-6 w-6 text-error" />
-              <div>
-                <h3 className="font-semibold text-foreground">
-                  {t("dashboard.alerts.title")}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  3 {t("dashboard.alerts.pending")}
-                </p>
-              </div>
-            </div>
-            <div className="mt-4 space-y-3">
-              <AlertPanel
-                severity="high"
-                title="Unusual Fever Cluster Detected"
-                location="Gram Panchayat, Sehore District"
-                description="16 cases reported in past 48 hours. Pattern suggests possible outbreak."
-                confidence={92}
-              />
-              <AlertPanel
-                severity="medium"
-                title="Medication Stock Alert"
-                location="PHC Jamkhandi"
-                description="Paracetamol stock below 30%. Recommended reorder."
-                confidence={78}
-              />
-            </div>
-          </Card>
-
-          {/* Recent Consultations */}
-          <div>
-            <h3 className="mb-4 font-semibold text-foreground">
-              {t("dashboard.consultations.recent")}
-            </h3>
-            <div className="space-y-3">
-              <ConsultationCard
-                patientId="P-2401"
-                patientName="Meera Singh"
-                age={34}
-                reason="Chronic Hypertension Follow-up"
-                status="completed"
-                time="10:45 AM"
-                confidence={88}
-              />
-              <ConsultationCard
-                patientId="P-2402"
-                patientName="Ajay Kumar"
-                age={28}
-                reason="Acute Respiratory Infection"
-                status="in-progress"
-                time="11:20 AM"
-                confidence={91}
-              />
-              <ConsultationCard
-                patientId="P-2403"
-                patientName="Priya Sharma"
-                age={45}
-                reason="Post-Surgery Assessment"
-                status="pending"
-                time={t("time.scheduled")}
-                confidence={0}
-              />
-            </div>
-          </div>
-
-          {/* System Trust Status - Rectangular Layout */}
-          <Card className="p-6">
-            <h3 className="mb-4 font-semibold text-foreground">
-              {t("dashboard.trust.score")}
-            </h3>
-            <SystemTrustStatus />
-          </Card>
+    <div className="p-6 lg:p-8 space-y-6 max-w-full">
+      {/* ===== Welcome Banner ===== */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in-up">
+        <div>
+          <h1 className="text-2xl lg:text-3xl font-bold text-foreground font-heading">
+            {greeting}, Dr. Kumar 👋
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground flex items-center gap-2">
+            <Calendar className="h-3.5 w-3.5" />
+            {dateStr}
+            <span className="text-slate-300 dark:text-slate-600">|</span>
+            <Clock className="h-3.5 w-3.5" />
+            {now.toLocaleTimeString("en-IN", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </p>
         </div>
-
-        {/* Right Column: Health Radar */}
-        <div className="space-y-6">
-          {/* Population Health Signals */}
-          <Card className="p-6">
-            <h3 className="mb-4 font-semibold text-foreground">
-              {t("dashboard.health.signals")}
-            </h3>
-            <HealthSignalsMap />
-          </Card>
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground bg-emerald-50 dark:bg-emerald-950/30 px-3 py-1.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+            <LivePulse active color="green" size="sm" />
+            <span>Real-time sync</span>
+          </div>
+          <AWSBadge service="HealthLake" model="FHIR R4" status="active" />
         </div>
       </div>
 
-      {/* Empty State Info */}
+      {/* ===== Critical Alerts Banner ===== */}
+      {criticalAlertCount > 0 && (
+        <div className="p-4 rounded-xl bg-gradient-to-r from-red-50 to-red-50/50 dark:from-red-950/50 dark:to-red-950/20 border border-red-200 dark:border-red-800 flex items-center justify-between animate-fade-in-up">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-red-100 dark:bg-red-900">
+              <Bell className="h-5 w-5 text-red-600" />
+            </div>
+            <div>
+              <p className="font-semibold text-red-800 dark:text-red-200">
+                {criticalAlertCount} Critical Alert
+                {criticalAlertCount > 1 ? "s" : ""} Requiring Attention
+              </p>
+              <p className="text-sm text-red-600 dark:text-red-300">
+                {
+                  alerts.find(
+                    (a) => a.severity === "critical" && !a.acknowledged
+                  )?.title
+                }
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-red-300 text-red-700 hover:bg-red-100 rounded-lg"
+            onClick={() => {
+              const alert = alerts.find(
+                (a) => a.severity === "critical" && !a.acknowledged
+              );
+              if (alert) acknowledgeAlert(alert.id);
+            }}
+          >
+            Acknowledge
+          </Button>
+        </div>
+      )}
+
+      {/* ===== KPI Row — Full Width ===== */}
+      <div className="animate-fade-in-up" style={{ animationDelay: "0.05s" }}>
+        <KpiGrid
+          metrics={{
+            consultationsToday: metrics.consultationsToday,
+            aiRecommendations: metrics.aiRecommendations,
+            bedOccupancy: metrics.bedOccupancy,
+            activeAlerts:
+              criticalAlertCount +
+              alerts.filter((a) => a.severity === "warning").length,
+            criticalAlertCount,
+          }}
+        />
+      </div>
+
+      {/* ===== Main Content: 2-Column Grid ===== */}
+      <div className="grid gap-6 lg:grid-cols-12">
+        {/* LEFT: Queue Panel (takes 7 cols) */}
+        <div
+          className="lg:col-span-7 animate-fade-in-up"
+          style={{ animationDelay: "0.1s" }}
+        >
+          <QueuePanel
+            patients={queuePatients}
+            avgWaitTime={metrics.avgWaitTime}
+            aiAccuracy={parseFloat(metrics.acceptanceRate.toFixed(1))}
+            overflowStatus={
+              metrics.waitingPatients > 8
+                ? "HIGH"
+                : metrics.waitingPatients > 5
+                ? "MOD"
+                : "LOW"
+            }
+          />
+        </div>
+
+        {/* RIGHT: AI Intelligence Feed (takes 5 cols) */}
+        <div
+          className="lg:col-span-5 animate-fade-in-up"
+          style={{ animationDelay: "0.15s" }}
+        >
+          <AIFeed alerts={aiAlerts} />
+        </div>
+      </div>
+
+      {/* ===== Model Performance & Regional Signals — Side by Side ===== */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Model Performance Card */}
+        <Card
+          className="p-5 hover-lift animate-fade-in-up"
+          style={{ animationDelay: "0.2s" }}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base font-semibold text-foreground">
+              Model Performance — Last 30 Days
+            </h3>
+            <AWSBadge service="Bedrock" model="Claude 3" />
+          </div>
+
+          {/* Stacked Bar */}
+          <div className="space-y-3">
+            <div className="h-8 rounded-full overflow-hidden flex bg-slate-100 dark:bg-slate-800">
+              <div
+                className="bg-teal-500 h-full transition-all duration-500 rounded-l-full"
+                style={{
+                  width: `${Math.round(metrics.acceptanceRate * 0.76)}%`,
+                }}
+              />
+              <div
+                className="bg-amber-400 h-full transition-all duration-500"
+                style={{ width: "22%" }}
+              />
+              <div
+                className="bg-red-400 h-full transition-all duration-500 rounded-r-full"
+                style={{
+                  width: `${
+                    100 - Math.round(metrics.acceptanceRate * 0.76) - 22
+                  }%`,
+                }}
+              />
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-teal-600 font-medium">
+                ✓ Accepted: {Math.round(metrics.acceptanceRate * 0.76)}%
+              </span>
+              <span className="text-amber-600 font-medium">
+                ✎ Edited: 22%
+              </span>
+              <span className="text-red-500 font-medium">
+                ✕ Rejected:{" "}
+                {100 - Math.round(metrics.acceptanceRate * 0.76) - 22}%
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-4 pt-4 border-t dark:border-slate-700 flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">
+              Current drift index:
+            </span>
+            <span className="text-sm font-mono font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-0.5 rounded">
+              0.031 ✓
+            </span>
+          </div>
+        </Card>
+
+        {/* Regional Signal Map */}
+        <Card
+          className="p-5 hover-lift animate-fade-in-up"
+          style={{ animationDelay: "0.25s" }}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base font-semibold text-foreground">
+              Regional Health Signals
+            </h3>
+            <AWSBadge service="Kinesis" model="SageMaker" />
+          </div>
+          <div className="h-44 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-xl flex items-center justify-center border border-dashed border-slate-200 dark:border-slate-700">
+            <div className="text-center">
+              <Activity className="h-8 w-8 text-slate-400 mx-auto mb-2" />
+              <p className="text-sm font-medium text-muted-foreground">
+                India District Map
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                742 districts monitored
+              </p>
+            </div>
+          </div>
+          <div className="mt-3 flex gap-6 text-xs">
+            <div className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+              <span>Low</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+              <span>Moderate</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
+              <span>High</span>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* ===== System Trust Scorecard — Full Width ===== */}
+      <div className="animate-fade-in-up" style={{ animationDelay: "0.3s" }}>
+        <SystemTrustStatus />
+      </div>
     </div>
   );
 }

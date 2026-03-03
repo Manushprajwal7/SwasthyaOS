@@ -1,0 +1,706 @@
+╔══════════════════════════════════════════════════════════════════════════════════╗
+║         SWASTHYAOS v2 — PROJECT FEATURES IMPLEMENTATION PROMPT                 ║
+║         All 8 Screens | All Components | All Interactions | All Mock Data      ║
+║         Build this exactly as specified — judges will inspect every screen      ║
+╚══════════════════════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GLOBAL COMPONENT LIBRARY — BUILD THESE FIRST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+COMPONENT: AWSBadge
+  Props: service (string), model? (string), latency? (number), status? ('active'|'idle'|'error')
+  Renders: Small pill chip — AWS logo icon (orange) + service name + optional model
+           + green/amber/red dot for status + latency in ms
+  Example: [▲ Amazon Bedrock · Claude 3 Sonnet · 342ms ●]
+  Colors: bg-slate-900, text-teal-400, border border-slate-700
+  Size: text-xs, px-2 py-0.5, rounded-full
+
+COMPONENT: ConfidenceRing
+  Props: score (0.0–1.0), size? ('sm'|'md'|'lg'), showLabel? (boolean)
+  Renders: Circular SVG ring — colored arc (green >0.80 / amber 0.60–0.79 / red <0.60)
+           + percentage text in center (JetBrains Mono font)
+  Animation: arc draws in on mount (CSS stroke-dasharray animation)
+
+COMPONENT: LivePulse
+  Props: active (boolean), color? (string), size? ('sm'|'md')
+  Renders: Pulsing dot — CSS keyframe animation @keyframes pulse-ring
+           Two concentric circles, outer fades out continuously
+  Use on: Alert feed items, live consultation indicator, active monitoring
+
+COMPONENT: FHIRBadge
+  Props: resourceType (string), validated (boolean), version? ('R4'|'R5')
+  Renders: Small badge — "FHIR R4 ✓" in green or "FHIR Invalid ✗" in red
+           Monospace font, clinical feel
+
+COMPONENT: AIActionBar
+  Props: onAccept, onEdit, onReject, confidence (number), sourceModel (string)
+  Renders: Three-button row — [✓ Accept] [✎ Edit] [✗ Reject]
+           + confidence ring + source model badge
+           Accept = teal button, Edit = outline, Reject = ghost red
+
+COMPONENT: TriageChip
+  Props: level ('green'|'amber'|'red'), label (string)
+  Renders: Filled chip with triage color + label
+  Green: "Stable", Amber: "Monitor", Red: "Critical"
+
+COMPONENT: SkeletonClinical
+  Renders: Animated skeleton loader — 3 lines of varying width
+           Use instead of spinners for all AI-loading states
+  Animation: shimmer effect (CSS gradient animation)
+
+COMPONENT: SectionHeader
+  Props: title, subtitle?, awsService?, icon?
+  Renders: Title (DM Sans bold) + subtitle (muted) + optional AWSBadge right-aligned
+           Bottom border: 1px solid #E2E8F0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FEATURE 1: SIDEBAR NAVIGATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WIDTH: 240px expanded / 64px collapsed (toggle button at top)
+BACKGROUND: #0F172A (dark navy, NOT teal)
+LOGO AREA: "SwasthyaOS" wordmark in white + small EKG line animation (SVG)
+           Below: "v2.1.0 · ap-south-1" in tiny muted text
+
+NAV ITEMS (with Lucide icons):
+  LayoutDashboard     Dashboard
+  Stethoscope         Clinician Workspace
+  Leaf                AarogyaPath
+  Radio               JanSwasthyaWatch
+  Users               Patients
+  FileText            Reports
+  Shield              Audit & AI
+  Settings            Settings
+
+Active state: teal left border + teal text + light teal bg
+Hover state: slight bg lighten
+
+BOTTOM SECTION:
+  Role Switcher pill (full width when expanded):
+    [👨‍⚕️ Dr. Sharma — AIIMS Delhi ▾]
+    Dropdown: Switch to ASHA Worker / PHO
+  System status dot: green "All Systems Operational"
+
+COLLAPSED STATE:
+  Only icons visible, tooltips on hover
+  Logo becomes "S" monogram
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FEATURE 2: TOP BAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+HEIGHT: 56px, bg white, bottom border
+LEFT:   Breadcrumb path (e.g., Dashboard > Clinician Workspace > Live Consultation)
+CENTER: Nothing (clean)
+RIGHT:
+  - Language selector dropdown: EN | हि | मर | தமி | తె
+  - Notification bell (badge count = 3)
+  - System health pill: [● Online · FHIR Sync 2m ago]
+  - User avatar + name
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FEATURE 3: DASHBOARD — SCREEN SPECIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LAYOUT: CSS Grid — 3 columns [30% | 45% | 25%], full height
+
+-- LEFT COLUMN --
+Title: "Today's Queue" + LivePulse (active)
+AWSBadge: Amazon HealthLake
+
+Queue list (scrollable, max-height 60vh):
+  Each row (48px height, hover highlight):
+    Token# | Patient name initials avatar | Age/Sex | Chief complaint | Wait time | TriageChip
+  
+  Mock data (15 patients):
+  TK-001 | RK | 67M | Fever + Cough | 4 min | RED
+  TK-002 | PS | 34F | Abdominal pain | 12 min | AMBER
+  TK-003 | AM | 52M | Follow-up DM | 18 min | GREEN
+  TK-004 | LB | 28F | ANC visit | 22 min | GREEN
+  TK-005 | VR | 71M | Chest pain | 2 min | RED
+  TK-006 | SK | 45F | Hypertension review | 31 min | AMBER
+  [+9 more...]
+
+Below queue: "Queue Intelligence" mini card:
+  Avg wait: 23 min | AI triage accuracy: 94.2% | Overflow risk: LOW
+
+-- CENTER COLUMN --
+Top row — 4 KPI tiles (2x2 grid):
+  [Consultations Today]     [Pending Documentation]
+  47 ▲ +8 vs yesterday      12 docs | 3 URGENT
+  sparkline (7 days)        urgency ring chart
+
+  [AI Assist Rate]          [Active Alerts]
+  89.3% accepted            3 NEW
+  7-day rolling avg         LivePulse red
+
+Middle — AI Confidence Health Monitor:
+  Title: "Model Performance — Last 30 Days"
+  AWSBadge: Amazon Bedrock
+  Stacked horizontal bar:
+    Accepted: 67% (teal)
+    Edited: 22% (amber)
+    Rejected: 11% (red)
+  Below: small line chart — trend of acceptance rate over 30 days
+  Current drift index: 0.031 (green indicator)
+
+Bottom — Regional Signal Map:
+  India SVG map (use simplified GeoJSON or polygon data)
+  Color intensity: Fever syndrome (scale: white → teal → red)
+  Animated pulse circles on: Nagpur, Patna, Bhopal
+  Legend: Low / Moderate / High / Critical
+  AWSBadge: Amazon Kinesis + SageMaker
+
+-- RIGHT COLUMN --
+Title: "AI Intelligence Feed"
+AWSBadge: Amazon Bedrock
+
+Feed items (auto-scrolling, new item every 30s via setInterval):
+  ┌─────────────────────────────────────┐
+  │ 🔴 14:32  HIGH                       │
+  │ ICD anomaly: J18.9 cluster — Nagpur  │
+  │ Confidence: 89% | Bedrock           │
+  │ [Investigate] [Dismiss]              │
+  └─────────────────────────────────────┘
+  ┌─────────────────────────────────────┐
+  │ 🟡 14:28  MEDIUM                     │
+  │ Drug interaction: Metformin + NSAID  │
+  │ Patient: TK-003 | Comprehend Med    │
+  │ [Review Patient]                     │
+  └─────────────────────────────────────┘
+  ┌─────────────────────────────────────┐
+  │ 🔵 14:15  INFO                       │
+  │ Discharge summary ready: TK-998      │
+  │ Language: Hindi | Translate         │
+  │ [Download] [Review]                  │
+  └─────────────────────────────────────┘
+
+Below feed — System Trust Scorecard:
+  Model Drift Index:      0.031  [●●●●○] GREEN
+  FHIR Sync Status:       ✅ 2 min ago
+  Anonymization:          ✅ Active (847 records)
+  Transcribe Accuracy:    97.3% (medical vocab)
+  Data Region:            ap-south-1 ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FEATURE 4: CLINICIAN WORKSPACE — SCREEN SPECIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SUB-TABS: [Live Consultation] [SOAP Builder] [Discharge Summary] [Rx Manager]
+
+-- TAB: LIVE CONSULTATION --
+
+Patient header bar (full width, 80px):
+  UHID-MH-88210 | Ramesh Kumar | 67M | Nagpur, MH
+  Allergies: [Penicillin] [Sulfa] (red chips)
+  Blood group: B+ | ABHA: 12-3456-7890-0001
+  FHIRBadge: FHIR R4 ✓
+
+Split layout: LEFT 58% | RIGHT 42%
+
+LEFT — Voice + Transcript Panel:
+  AWSBadge: Amazon Transcribe Medical (top right)
+  Large mic button (80px, circle):
+    State: idle = gray, recording = teal with pulse animation
+    Below: "Tap to speak | बोलें"
+  
+  Transcript area (scrollable):
+    [DR 14:23:11] Patient presents with fever since 3 days... (blue)
+    [PT 14:23:18] Haan doctor, 3 din se bukhar hai... (green)
+    [DR 14:23:45] SpO2 measuring now, any breathlessness? (blue)
+    
+    Highlighted entities (colored underline on hover = tooltip):
+      "fever" → SYMPTOM (red)
+      "3 days" → DURATION (gray)
+      "breathlessness" → SYMPTOM (red)
+    
+  Medical Entity Summary (below transcript):
+    Symptoms: Fever (3d), Cough (5d), Breathlessness
+    Vitals mentioned: SpO2 93%, Temp 38.9°C
+    Medications mentioned: Paracetamol 500mg
+    Source: [▲ Comprehend Medical]
+
+RIGHT — AI SOAP Note Builder:
+  AWSBadge: Amazon Bedrock · Claude 3 Sonnet (top right)
+  
+  Four sections (accordion-style, all open by default):
+  
+  [S] SUBJECTIVE (AI-drafted):
+    "67-year-old male presents with 3-day history of fever (38.9°C),
+    progressive cough, and new onset breathlessness. Reports decreased
+    oral intake. Background history of Type 2 Diabetes Mellitus."
+    ConfidenceRing: 91% | AIActionBar
+  
+  [O] OBJECTIVE:
+    "SpO2: 93% (room air) | Temp: 38.9°C | BP: 142/88 mmHg
+    HR: 104 bpm | RR: 22/min | Auscultation: Pending"
+    ConfidenceRing: 88% | AIActionBar
+  
+  [A] ASSESSMENT:
+    "Probable community-acquired pneumonia in a diabetic patient.
+    Severity: Moderate (CURB-65 score: 2)"
+    ConfidenceRing: 84% | AIActionBar
+  
+  [P] PLAN:
+    "1. CXR PA view STAT
+     2. CBC, CRP, Blood culture x2
+     3. IV Amoxicillin-Clavulanate 1.2g Q8H pending culture
+     4. SpO2 monitoring Q2H
+     5. Diabetes management review"
+    ConfidenceRing: 87% | AIActionBar
+  
+  ICD-10 SUGGESTIONS (below SOAP):
+    Table: Code | Description | Confidence | Source | Action
+    J18.9  | Pneumonia, unspecified | 84% | Bedrock | [Accept]
+    J06.9  | Acute URTI | 12% | Bedrock | [Accept]
+    E11.69 | T2DM with complication | 96% | Comprehend | [Accept]
+    I10    | Hypertension | 91% | Comprehend | [Accept]
+    [Accept All Selected] button (teal, prominent)
+
+-- TAB: DISCHARGE SUMMARY GENERATOR --
+
+Two-column: LEFT 65% form | RIGHT 35% preview
+
+Form sections:
+  Diagnosis Summary (multi-line, pre-filled from SOAP)
+  Treatment Given (pre-filled from Rx)
+  Investigations Completed (checklist)
+  Follow-up Instructions (structured input)
+  Discharge Condition: [Stable] [Guarded] [Critical]
+  
+  Toggles (top bar):
+    [Clinical View ●] / [Patient-Friendly View]
+    Language: [EN] [HI] [MR] [TA] [TE]
+    AWSBadge: Amazon Translate (shows when non-EN selected)
+  
+  Export bar: [Download PDF] [FHIR Bundle] [Print] [Share via ABDM]
+  Legal disclaimer: expandable accordion
+
+Preview (right):
+  Live rendered preview of discharge summary
+  Patient-friendly version shows simplified language + graphics (icons only, no illustrations)
+
+-- TAB: RX MANAGER --
+
+Prescription builder:
+  Search bar: type drug name → auto-complete (Comprehend Medical powered)
+  
+  Active prescriptions table:
+    Drug | Dose | Frequency | Duration | Route | Interaction Flag
+    Amoxicillin-Clav | 625mg | BD | 7 days | Oral | ✅ Clear
+    Paracetamol | 500mg | TDS PRN | 5 days | Oral | ✅ Clear
+    Metformin | 500mg | BD | Continued | Oral | ⚠️ Monitor
+  
+  Drug interaction checker panel (right):
+    AWSBadge: Amazon Comprehend Medical
+    "Metformin + Amoxicillin: Low interaction risk — monitor renal function"
+    Confidence: 78% | Source: MOHFW Drug Interaction DB
+  
+  Generic substitute button on each drug
+  PMJAY formulary compliance: [✅ Covered] / [❌ Not covered]
+  Pediatric dose calculator toggle
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FEATURE 5: AAROGYAPATH — RURAL DECISION SUPPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ROLE: ASHA/ANM worker in PHC — simplified UI
+Switchable: Full-screen progressive stepper (no sidebar clutter option)
+
+STEP INDICATOR: horizontal progress bar (6 steps)
+
+STEP 1 — Patient Registration:
+  Large inputs (touch-friendly, 56px height):
+  Age (number spinner) | Sex (3 large toggle buttons: M / F / Other)
+  Village (text) | District (dropdown, all India)
+  ABHA ID (optional, with scanner icon)
+
+STEP 2 — Vitals Entry:
+  Grid of 6 vitals cards (icon + value + unit):
+  🌡️ Temperature [___] °C
+  💉 SpO2 [___] %
+  ❤️ Heart Rate [___] bpm
+  🩸 Blood Pressure [___/___] mmHg
+  🌬️ Respiratory Rate [___] /min
+  ⚖️ Weight [___] kg
+  
+  Auto-flag: any abnormal value = red border + warning message
+  "Normal ranges shown" toggle (reference values displayed)
+
+STEP 3 — Symptom Selection:
+  Visual icon grid (5 columns, large 72px tiles):
+  Each tile: icon + label in Hindi + English
+  🤒 Fever/बुखार  🤧 Cough/खांसी  🤢 Vomiting/उल्टी
+  💩 Diarrhea/दस्त  😮‍💨 Breathlessness/सांस  🤕 Headache/सिरदर्द
+  🦷 Throat pain  🤰 Pregnancy concern  👶 Child feeding issue
+  💊 Medication side effect  [+ More symptoms]
+  
+  Duration slider: Hours(1-24) → Days(1-30) → Weeks(1-12)
+  Voice input button (large, bottom center): "बोलें / Speak"
+  AWSBadge: Amazon Transcribe Medical + Amazon Translate
+
+STEP 4 — Risk Factors:
+  Large toggle cards (one-tap):
+  [Pregnant] [Diabetes] [Hypertension] [Age >60] [Child <5]
+  [Immunocompromised] [Recent hospitalization] [Malnutrition]
+
+STEP 5 — AI REASONING TRACE (★ KEY INNOVATION):
+  Full-width panel, dark background (#0F172A), monospace text
+  Title: "AI Clinical Reasoning — Powered by Amazon Bedrock"
+  
+  Animated step-by-step reveal (each step fades in sequentially, 800ms delay):
+  
+  ┌──────────────────────────────────────────────────────────┐
+  │  CLINICAL REASONING ENGINE — SwasthyaOS Bedrock v2.1    │
+  │  Model: Claude 3 Sonnet | Temp: 0.1 | MOHFW Protocol   │
+  ├──────────────────────────────────────────────────────────┤
+  │  STEP 1 [Comprehend Medical] ✓                          │
+  │  → Detected: Fever (38.9°C) + Cough (5d) + SpO2 93%   │
+  │    Symptom severity: HIGH                               │
+  │                                                          │
+  │  STEP 2 [Bedrock Pattern Match] ✓                       │
+  │  → Pattern: Fever + Cough + Low SpO2 → ARI/Pneumonia   │
+  │    Differential: CAP (72%), TB (15%), Other (13%)       │
+  │                                                          │
+  │  STEP 3 [Risk Stratification] ✓                         │
+  │  → Age 67 + DM + SpO2<94% = HIGH RISK                  │
+  │    MOHFW ARI Protocol: Severity Class III               │
+  │                                                          │
+  │  STEP 4 [Guideline Lookup] ✓                            │
+  │  → MOHFW IMNCI Protocol 4.2 matched                    │
+  │    ASHA referral criteria MET (≥2 danger signs)         │
+  │                                                          │
+  │  STEP 5 [Decision] ✓                                    │
+  │  → REFER TO PHC — URGENT                               │
+  │    Confidence: 91% | Override available                 │
+  └──────────────────────────────────────────────────────────┘
+  
+  Expand/collapse button: "Show full reasoning →"
+
+STEP 6 — DECISION OUTPUT:
+  Three outcome cards (only one highlighted based on AI):
+  
+  🟢 TREAT LOCALLY
+     Mild cases — protocol listed
+     [Select this]
+  
+  🟡 REFER TO PHC  ← HIGHLIGHTED (pulsing border)
+     Reason: SpO2 <94% + Elderly + Diabetes
+     Target: PHC Nagpur Central (3.2 km)
+     [Generate Referral Slip] ← PRIMARY CTA
+  
+  🔴 EMERGENCY
+     Life-threatening — call 108
+     [Call Ambulance (Mock)]
+  
+  Override button: "Doctor Override — Change Decision" (small, below)
+
+REFERRAL SLIP (generated on click):
+  Modal overlay with printable slip:
+  Patient details | Vitals | Reason for referral | Triage level
+  QR code (mocked) | FHIR ReferralRequest badge
+  [Print] [Download PDF] [Share via WhatsApp (Mock)]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FEATURE 6: JANSWASTHYAWATCH — POPULATION HEALTH RADAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LAYOUT: Map 65% left | Intelligence panel 35% right
+
+MAP PANEL:
+  India SVG choropleth (state-level minimum, district-level on zoom)
+  Default view: Fever syndrome burden last 7 days
+  
+  Map controls (floating, top-left of map):
+    Syndrome layer: [Fever ●] [Respiratory] [GI] [Vector-borne] [Maternal]
+    Time: [7D ●] [30D] [90D]
+    Overlay: [Cases] [Rate] [Change %]
+  
+  District coloring scale:
+    #F0FDF4 → #6EE7B7 → #0D9488 → #DC2626 (white to red)
+  
+  Animated elements:
+    Pulsing circles (radius animation) on anomaly districts:
+      Nagpur: red large pulse
+      Patna: amber medium pulse
+      Bhopal: amber small pulse
+  
+  Click on district → right panel updates to district detail
+  
+  AWSBadge: Amazon Kinesis + SageMaker (bottom of map)
+  "742 districts monitored in real-time"
+
+INTELLIGENCE PANEL (right):
+
+  Section 1 — Active Anomalies:
+  AWSBadge: SageMaker Anomaly Detection
+
+  Alert card (RED):
+  LivePulse red | Nagpur, Maharashtra
+  Syndrome: Influenza-Like Illness (ILI)
+  Active Cases (7d): 847 (+340% vs baseline)
+  Population at risk: ~2.4M
+  Confidence: 89% | RCFM Score: 0.94
+  Detected: 6 hours ago
+  [Investigate] [Generate SitRep] [Notify CMO]
+  
+  Alert card (AMBER):
+  LivePulse amber | Patna, Bihar
+  Syndrome: Acute Gastroenteritis
+  Active Cases (7d): 234 (+67% vs baseline)
+  Confidence: 74% | RCFM Score: 0.71
+  [Monitor] [Investigate]
+
+  Section 2 — Syndrome Trends:
+  Multi-line chart (Recharts):
+    X-axis: last 30 days
+    Y-axis: case count
+    Lines: Fever (teal), Respiratory (blue), GI (amber)
+    Shaded band: baseline ±1 SD
+    Today marker: vertical dashed line
+  AWSBadge: Amazon Kinesis
+
+  Section 3 — 14-Day Forecast:
+  Line chart with confidence interval band (shaded)
+  "Powered by SageMaker Forecast — DeepAR+"
+  Intervention toggle: "With intervention" / "Without intervention"
+  Shows % change if intervention applied
+
+  Section 4 — Auto SitRep Generator:
+  Button: [Generate Situation Report]
+  → Bedrock generates narrative (skeleton loader → text reveal)
+  
+  Output:
+  ─────────────────────────────────────
+  SITUATION REPORT — Nagpur District
+  Generated: 14 Mar 2024, 14:45 IST
+  Powered by: Amazon Bedrock (Claude 3)
+  ─────────────────────────────────────
+  An elevated cluster of influenza-like illness cases has been
+  detected in Nagpur district over the past 7 days...
+  
+  Data Sources: IHIP surveillance feed, PHC daily reports
+  Limitations: Data 24h delayed | Rural PHC reporting: 67% complete
+  Confidence: 89% | Recommended action: CMO notification
+  ─────────────────────────────────────
+  [Download PDF] [Email to CMO] [MOHFW Format]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FEATURE 7: PATIENT TIMELINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LAYOUT: Patient card header | Timeline main | Right risk panel
+
+PATIENT HEADER:
+  Large card (full width, 100px):
+  [Avatar initials] UHID-MH-88210 | Ramesh Kumar | 67M
+  DOB: 15 Mar 1957 | Blood: B+ | District: Nagpur, MH
+  ABHA: 12-3456-7890-0001 | Language: Hindi
+  Allergies: [Penicillin ✗] [Sulfa ✗]
+  FHIRBadge: FHIR R4 | AWSBadge: AWS HealthLake
+
+TIMELINE (vertical, left-anchored connector line in teal):
+  
+  2024-03-14 (TODAY)
+  🔵 Consultation — Dr. Sharma, AIIMS Delhi
+     Chief: Fever + Cough + Breathlessness
+     Assessment: Probable CAP (J18.9) — Confidence: 84%
+     [View SOAP] [View FHIR JSON ▾]
+  
+  2024-03-12
+  🟠 Lab Result — CBC, CXR
+     Hb: 11.2 | WBC: 14,800 (HIGH ⚠️) | CXR: Right basal opacity
+     AI interpretation: Consistent with bacterial pneumonia
+     [View Report] [View FHIR JSON ▾]
+  
+  2024-03-01
+  🟢 Medication — Ongoing
+     Metformin 500mg BD (DM management)
+     Amlodipine 5mg OD (Hypertension)
+     [View Rx] [Check Interactions]
+  
+  2024-01-15
+  🔵 Consultation — PHC Nagpur
+     Chief: DM follow-up | HbA1c: 8.1% (suboptimal)
+     [View SOAP]
+  
+  2023-11-02
+  ⚪ Referral — ASHA Worker (AarogyaPath)
+     Referred: Chest pain evaluation
+     Triage level: AMBER | Referral slip QR attached
+     [View Referral]
+  
+  FHIR JSON Toggle (each event):
+    Monospace panel (JetBrains Mono) showing raw FHIR resource
+    FHIRBadge: FHIR R4 ✓
+
+RIGHT PANEL — Risk Intelligence:
+  AWSBadge: Amazon SageMaker
+  
+  30-Day Readmission Risk: 34% (AMBER)
+  Medication Adherence: 67% (LOW ⚠️)
+  Chronic Conditions: DM, HTN, Recurrent ARI
+  
+  Risk factors visualized (horizontal bar per factor):
+    Age >65:            HIGH
+    DM uncontrolled:    HIGH
+    Low SpO2 history:   MEDIUM
+    Medication gaps:    MEDIUM
+    Social isolation:   LOW (unknown)
+  
+  Upcoming follow-ups:
+    Mar 21: HbA1c review
+    Mar 28: Post-pneumonia CXR
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FEATURE 8: AUDIT & RESPONSIBLE AI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TABS: [AI Decision Log] [Confidence Analytics] [Human Overrides] [Data Governance]
+
+-- TAB: AI DECISION LOG --
+AWSBadge: AWS CloudTrail (top right)
+
+Filter bar: Date range | Model | Role | Action | Confidence range | Export CSV
+
+Table (sortable, paginated 25/page):
+Timestamp       | Token    | Model      | Input Summary       | Output          | Score | Action    | Override
+2024-03-14 14:32 | TK-001  | Bedrock   | Fever+Cough+SpO2   | J18.9 (84%)    | 0.84  | Accepted  | —
+2024-03-14 14:28 | TK-003  | Comprehend | Metformin review   | Drug flag       | 0.78  | Accepted  | —
+2024-03-14 14:15 | TK-002  | Bedrock   | Abdominal pain     | K29.7 (71%)    | 0.71  | Edited    | Doctor
+2024-03-14 13:55 | TK-007  | Bedrock   | Discharge summary  | Hindi version  | 0.92  | Accepted  | —
+
+Expand row → full prompt/response JSON
+"Integrity hash: SHA-256 8f4a2c..." (bottom of each expanded row)
+AWSBadge: AWS CloudTrail | Data stored immutably
+
+-- TAB: CONFIDENCE ANALYTICS --
+AWSBadge: Amazon SageMaker Model Monitor
+
+Grid of 4 charts:
+
+  Chart 1 — Acceptance Rate by Confidence Bucket (histogram):
+    X: confidence deciles (0.5–0.6, 0.6–0.7, ..., 0.9–1.0)
+    Y: % accepted by doctors
+    Shows: well-calibrated model (high confidence = high acceptance)
+
+  Chart 2 — Model Drift Index over 90 Days (line chart):
+    Y-axis: drift score 0–1
+    Threshold line at 0.10 (red dashed)
+    Current: 0.031 (well within threshold)
+    AWSBadge: SageMaker Model Monitor
+
+  Chart 3 — Per-Module Accuracy (horizontal bar):
+    SOAP Generation:        91.2%
+    ICD-10 Coding:          87.4%
+    Triage Classification:  94.1%
+    Population Anomaly:     88.9%
+    Drug Interaction:       95.3%
+
+  Chart 4 — Calibration Curve:
+    X: predicted confidence
+    Y: actual accuracy
+    Perfect calibration line (dashed gray)
+    Model line (teal) — showing close calibration
+
+-- TAB: HUMAN OVERRIDES --
+
+Summary stats (top):
+  Total overrides this month: 47 (11.2% of AI decisions)
+  Most common reason: "Clinical context not captured" (34%)
+
+Pie chart — Override reasons:
+  Clinical context missing: 34%
+  Outdated guidelines: 18%
+  Patient preference: 15%
+  Formulary constraint: 13%
+  Other: 20%
+
+Override feed (table):
+  Timestamp | Patient | AI Suggestion | Doctor's Override | Reason | Impact
+  Annotated: "These overrides feed back into Bedrock fine-tuning — improving future accuracy"
+
+-- TAB: DATA GOVERNANCE --
+AWSBadge: AWS KMS + AWS Macie + DPDP Act 2023
+
+Compliance checklist (large, checkbox-style):
+  ✅ Data stored in ap-south-1 (Mumbai) — India data residency
+  ✅ AES-256 encryption at rest (KMS CMK)
+  ✅ TLS 1.3 in transit
+  ✅ k-anonymity applied (k≥5) on population data
+  ✅ DPDP Act 2023 — consent management active
+  ✅ ABDM compliance — ABHA ID integration
+  ✅ Audit trail integrity: SHA-256 verified
+  ⚠️ HIPAA BAA: Pending (for future international expansion)
+  ⚠️ ISO 27001: Audit scheduled Q2 2024
+
+Data residency map:
+  Simple map showing single dot on ap-south-1 Mumbai
+  "All patient data stored within Indian borders"
+
+Anonymization pipeline status:
+  Records anonymized today: 847
+  PII detected + masked: 23 instances
+  Re-identification risk: VERY LOW (0.003%)
+  Method: k-anonymity + Comprehend Medical PII redaction
+
+Consent management mini-dashboard:
+  Active consents: 1,247 patients
+  Withdrawn consents: 3 (data deletion queued)
+  Consent pending: 14
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FEATURE 9: AWS ARCHITECTURE VIEWER (★ UNIQUE DIFFERENTIATOR)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Location: Settings > Architecture View tab
+
+Interactive React Flow diagram:
+  Nodes: Each AWS service (color-coded by category)
+    Compute: Lambda, ECS (orange)
+    AI/ML: Bedrock, Transcribe, Comprehend, SageMaker (purple-ish — use AWS orange instead)
+    Storage: HealthLake, DynamoDB, S3 (green)
+    Security: Cognito, KMS, CloudTrail (red/dark)
+  
+  Edges: Animated data flow arrows (dashed, moving animation)
+  
+  Click any node → right panel shows:
+    Service status: ● Online
+    Last API call: 2 minutes ago
+    Latency (p50/p95/p99)
+    Mock cost this month
+  
+  Below diagram — Service Health Table:
+  Service              | Status  | Latency (p99) | Cost (MTD)  | Region
+  Amazon Bedrock       | ✅ Active | 412ms         | $34.20      | ap-south-1
+  Transcribe Medical   | ✅ Active | 287ms         | $18.40      | ap-south-1
+  Comprehend Medical   | ✅ Active | 156ms         | $8.90       | ap-south-1
+  AWS HealthLake       | ✅ Active | 203ms         | $22.10      | ap-south-1
+  SageMaker Endpoints  | ✅ Active | 334ms         | $16.80      | ap-south-1
+  Amazon Kinesis       | ✅ Active | 45ms          | $5.20       | ap-south-1
+  Amazon Translate     | ✅ Active | 89ms          | $2.10       | ap-south-1
+  
+  Total MTD Cost: $107.70 | Projected Monthly: $647
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FEATURE 10: REAL-TIME SIMULATION SPECIFICATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use setInterval and setTimeout to simulate live behavior:
+
+  Every 30s: New alert appears in AI feed (rotate through 8 mock alerts)
+  Every 45–90s: New patient added to consultation queue
+  Every 10s: System metrics update (slight random delta on confidence, drift)
+  Every 5s: Transcription simulation (new words appear in live consultation)
+  Every 2m: FHIR sync timestamp refreshes ("X min ago")
+  Map pulse: CSS animation continuous, no interval needed
+
+Transcript simulation:
+  Pre-written transcript array, word-by-word append
+  200ms delay between words, 800ms between speaker turns
+  Creates live feel without actual audio
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+END OF FEATURES IMPLEMENTATION DOCUMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

@@ -17,6 +17,7 @@ import {
   MessageSquare,
   ChevronLeft,
   ChevronRight,
+  Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/language-context";
@@ -125,34 +126,46 @@ export function Sidebar({
   ];
 
   const filteredItems = navigationItems.filter((item) =>
-    item.roles.includes(userRole),
+    item.roles.includes(userRole)
   );
 
   return (
     <div
       className={cn(
-        "flex flex-col border-r border-border bg-sidebar transition-all duration-300",
-        isOpen ? "w-64" : "w-20",
+        "flex flex-col bg-slate-100 border-r border-slate-200 transition-all duration-300",
+        isOpen ? "w-64" : "w-20"
       )}
     >
       {/* Logo Section */}
       <div
         className={cn(
-          "flex items-center justify-between border-b border-border px-4 py-6",
-          !isOpen && "flex-col gap-2",
+          "flex items-center justify-between border-b border-slate-200 px-4 py-6",
+          !isOpen && "flex-col gap-2"
         )}
       >
-        {isOpen && (
+        {isOpen ? (
           <div className="flex flex-col">
-            <h1 className="text-xl font-bold text-primary">SwasthyaOS</h1>
-            <p className="text-xs text-muted-foreground">
-              Healthcare Intelligence
-            </p>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold text-slate-900">SwasthyaOS</h1>
+              {/* EKG Line Animation */}
+              <svg className="h-4 w-12 text-teal-600" viewBox="0 0 48 16">
+                <path
+                  d="M0 8 L8 8 L12 2 L16 14 L20 6 L24 10 L28 8 L48 8"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  className="animate-pulse"
+                />
+              </svg>
+            </div>
+            <p className="text-xs text-slate-500 mt-1">v2.1.0 · ap-south-1</p>
           </div>
+        ) : (
+          <span className="text-xl font-bold text-teal-600">S</span>
         )}
         <button
           onClick={onToggle}
-          className="rounded-lg p-1 hover:bg-sidebar-accent"
+          className="rounded-lg p-1.5 hover:bg-slate-200 text-slate-500 hover:text-slate-700 transition-colors"
           aria-label={isOpen ? "Collapse sidebar" : "Expand sidebar"}
         >
           {isOpen ? (
@@ -164,7 +177,7 @@ export function Sidebar({
       </div>
 
       {/* Navigation Items */}
-      <nav className="flex-1 space-y-2 overflow-y-auto px-3 py-6">
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-6">
         {filteredItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentPage === item.id;
@@ -174,10 +187,10 @@ export function Sidebar({
               key={item.id}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 isActive
-                  ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent",
+                  ? "bg-teal-600 text-white shadow-sm"
+                  : "text-slate-700 hover:bg-slate-200 hover:text-slate-900"
               )}
               title={!isOpen ? item.label : undefined}
             >
@@ -188,17 +201,30 @@ export function Sidebar({
         })}
       </nav>
 
-      {/* Bottom Section */}
+      {/* Bottom Section - System Status */}
       <div
         className={cn(
-          "border-t border-border px-3 py-4",
-          !isOpen && "flex flex-col items-center",
+          "border-t border-slate-200 px-3 py-4",
+          !isOpen && "flex flex-col items-center"
         )}
       >
-        <div className={cn("text-xs", !isOpen ? "text-center" : "")}>
-          <p className="font-semibold text-sidebar-foreground">v1.0.0</p>
-          {isOpen && <p className="text-sidebar-foreground/60">SwasthyaOS</p>}
-        </div>
+        {isOpen ? (
+          <div className="space-y-3">
+            {/* System Status */}
+            <div className="flex items-center gap-2 text-xs">
+              <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-slate-600">All Systems Operational</span>
+            </div>
+            <div className="text-xs text-slate-500">
+              <p>SwasthyaOS Healthcare Platform</p>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+            <Activity className="h-4 w-4 text-slate-500" />
+          </div>
+        )}
       </div>
     </div>
   );

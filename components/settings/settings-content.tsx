@@ -1,30 +1,53 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { User, Bell, Lock, Eye, Database, Monitor, HelpCircle } from 'lucide-react';
-import { UserSettings } from './user-settings';
-import { NotificationSettings } from './notification-settings';
-import { SecuritySettings } from './security-settings';
-import { DataPrivacySettings } from './data-privacy-settings';
-import { SystemSettings } from './system-settings';
+import React, { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  User,
+  Bell,
+  Lock,
+  Eye,
+  Database,
+  Monitor,
+  HelpCircle,
+  Network,
+} from "lucide-react";
+import { UserSettings } from "./user-settings";
+import { NotificationSettings } from "./notification-settings";
+import { SecuritySettings } from "./security-settings";
+import { DataPrivacySettings } from "./data-privacy-settings";
+import { SystemSettings } from "./system-settings";
+import { AWSArchitectureViewer } from "@/components/ui/aws-architecture-viewer";
+import { AWSBadge } from "@/components/ui/aws-badge";
 
 export function SettingsContent() {
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState("profile");
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-foreground">Settings</h1>
-        <p className="text-muted-foreground">Manage your account, preferences, and system configuration</p>
+        <p className="text-muted-foreground">
+          Manage your account, preferences, and system configuration
+        </p>
       </div>
 
       {/* Settings Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-4"
+      >
+        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6">
           <TabsTrigger value="profile" className="gap-2">
             <User className="h-4 w-4" />
             <span className="hidden sm:inline">Profile</span>
@@ -44,6 +67,10 @@ export function SettingsContent() {
           <TabsTrigger value="system" className="gap-2">
             <Monitor className="h-4 w-4" />
             <span className="hidden sm:inline">System</span>
+          </TabsTrigger>
+          <TabsTrigger value="architecture" className="gap-2">
+            <Network className="h-4 w-4" />
+            <span className="hidden sm:inline">Architecture</span>
           </TabsTrigger>
         </TabsList>
 
@@ -65,6 +92,105 @@ export function SettingsContent() {
 
         <TabsContent value="system" className="space-y-4">
           <SystemSettings />
+        </TabsContent>
+
+        <TabsContent value="architecture" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Network className="h-5 w-5 text-teal-600" />
+                    AWS Architecture Overview
+                  </CardTitle>
+                  <CardDescription>
+                    SwasthyaOS data pipeline and AI processing architecture
+                  </CardDescription>
+                </div>
+                <div className="flex gap-2">
+                  <AWSBadge
+                    service="Bedrock"
+                    model="Claude 3 Sonnet"
+                    status="active"
+                  />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <AWSArchitectureViewer />
+            </CardContent>
+          </Card>
+
+          {/* AWS Services Summary */}
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">AI/ML Services</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Amazon Bedrock</span>
+                  <span className="text-emerald-500 font-medium">Active</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    Amazon SageMaker
+                  </span>
+                  <span className="text-emerald-500 font-medium">Active</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    Comprehend Medical
+                  </span>
+                  <span className="text-emerald-500 font-medium">Active</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Data Services</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    HealthLake (FHIR)
+                  </span>
+                  <span className="text-emerald-500 font-medium">Active</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Amazon Kinesis</span>
+                  <span className="text-emerald-500 font-medium">Active</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    Transcribe Medical
+                  </span>
+                  <span className="text-emerald-500 font-medium">Active</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Security & Compliance</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">AWS KMS</span>
+                  <span className="text-emerald-500 font-medium">Active</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">CloudTrail</span>
+                  <span className="text-emerald-500 font-medium">Active</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Region</span>
+                  <span className="font-mono text-teal-600">ap-south-1</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
 

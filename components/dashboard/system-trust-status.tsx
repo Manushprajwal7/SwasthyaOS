@@ -3,6 +3,7 @@
 import React from "react";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { Shield, Brain, Database, Activity } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 
@@ -51,110 +52,88 @@ export function SystemTrustStatus() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "excellent":
-        return "bg-success text-success-foreground";
+        return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300";
       case "good":
-        return "bg-accent text-accent-foreground";
+        return "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300";
       case "fair":
-        return "bg-warning text-warning-foreground";
-      case "poor":
-        return "bg-error text-error-foreground";
+        return "bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300";
       default:
-        return "bg-muted text-muted-foreground";
+        return "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300";
     }
-  };
-
-  const getProgressColor = (value: number) => {
-    if (value >= 95) return "bg-success";
-    if (value >= 85) return "bg-accent";
-    if (value >= 70) return "bg-warning";
-    return "bg-error";
   };
 
   const overallTrustScore = Math.round(
     trustMetrics.reduce((sum, metric) => sum + metric.value, 0) /
-      trustMetrics.length,
+      trustMetrics.length
   );
 
   return (
-    <div className="space-y-6">
-      {/* Overall Trust Score - Horizontal Layout */}
-      <div className="flex items-center justify-between p-4 bg-success/5 rounded-lg border border-success/20">
+    <Card className="p-5">
+      {/* Header Row: Overall Score + Summary */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-5">
         <div className="flex items-center gap-4">
-          <div className="text-4xl font-bold text-success">
-            {overallTrustScore}%
+          <div className="flex items-center justify-center h-14 w-14 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/50 dark:to-teal-950/50 border border-emerald-200/50 dark:border-emerald-800/50">
+            <span className="text-xl font-bold text-emerald-600">
+              {overallTrustScore}%
+            </span>
           </div>
           <div>
-            <p className="text-sm font-semibold text-foreground">
+            <h3 className="text-base font-semibold text-foreground">
               {t("trust.overall.score")}
-            </p>
-            <Badge className="mt-1 bg-success text-success-foreground">
-              {t("trust.system.trusted")}
-            </Badge>
+            </h3>
+            <div className="flex items-center gap-2 mt-1">
+              <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 border-0 text-xs">
+                {t("trust.system.trusted")}
+              </Badge>
+              <span className="text-xs text-muted-foreground">
+                v2.1.4 · Updated 2h ago
+              </span>
+            </div>
           </div>
         </div>
-
-        {/* Trust Factors - Inline */}
-        <div className="flex items-center gap-6 text-xs text-muted-foreground">
-          <div className="text-center">
-            <div className="font-medium text-foreground">v2.1.4</div>
-            <div>{t("trust.model.version")}</div>
-          </div>
-          <div className="text-center">
-            <div className="font-medium text-foreground">
-              2 {t("time.hours.ago")}
-            </div>
-            <div>{t("trust.last.updated")}</div>
-          </div>
-          <div className="text-center">
-            <Badge
-              variant="outline"
-              className="bg-success/10 text-success border-success/20"
-            >
-              {t("trust.compliant")}
-            </Badge>
-            <div className="mt-1">{t("trust.audit.status")}</div>
-          </div>
-          <div className="text-center">
-            <div className="font-medium text-foreground">6 active</div>
-            <div>{t("trust.data.sources")}</div>
-          </div>
+        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+          <Badge
+            variant="outline"
+            className="bg-emerald-50/50 text-emerald-600 border-emerald-200/50 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800/50"
+          >
+            {t("trust.compliant")}
+          </Badge>
+          <span>6 active data sources</span>
         </div>
       </div>
 
-      {/* Individual Metrics - Grid Layout */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Metric Cards Row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {trustMetrics.map((metric) => (
           <div
             key={metric.name}
-            className="space-y-3 p-4 rounded-lg border border-border bg-card hover:bg-muted/50 transition-colors"
+            className="flex flex-col gap-2 p-3 rounded-xl border border-border bg-slate-50/50 dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
           >
             <div className="flex items-center justify-between">
-              <div className="text-muted-foreground">{metric.icon}</div>
+              <div className="p-1.5 rounded-lg bg-white dark:bg-slate-800 shadow-sm text-muted-foreground">
+                {metric.icon}
+              </div>
               <Badge
                 variant="outline"
-                className={`text-xs ${getStatusColor(metric.status)}`}
+                className={`text-[10px] px-1.5 py-0 ${getStatusColor(
+                  metric.status
+                )} border-0`}
               >
-                {t(`common.${metric.status}` as keyof typeof t)}
+                {metric.status}
               </Badge>
             </div>
-
             <div>
-              <div className="text-2xl font-bold text-foreground mb-1">
+              <div className="text-xl font-bold text-foreground">
                 {metric.value}%
               </div>
-              <p className="text-xs font-medium text-foreground">
+              <p className="text-xs font-medium text-muted-foreground mt-0.5">
                 {metric.name}
               </p>
             </div>
-
-            <Progress value={metric.value} className="h-2" />
-
-            <p className="text-xs text-muted-foreground line-clamp-2">
-              {metric.description}
-            </p>
+            <Progress value={metric.value} className="h-1.5" />
           </div>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }

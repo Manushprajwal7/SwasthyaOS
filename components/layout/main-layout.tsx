@@ -36,7 +36,7 @@ export function MainLayout({ children, currentPage = 'dashboard' }: MainLayoutPr
       />
 
       {/* Main Content Area */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col overflow-hidden min-w-0">
         {/* Top Context Bar */}
         <TopBar
           userRole={userRole}
@@ -45,8 +45,8 @@ export function MainLayout({ children, currentPage = 'dashboard' }: MainLayoutPr
         />
 
         {/* Content Canvas */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="h-full w-full">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
+          <div className="h-full w-full max-w-full">
             {children}
           </div>
         </main>
