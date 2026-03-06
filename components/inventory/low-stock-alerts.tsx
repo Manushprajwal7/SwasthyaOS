@@ -1,11 +1,14 @@
-'use client';
+"use client";
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, TrendingDown, Clock, Zap } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export function LowStockAlerts() {
+  const { toast } = useToast();
+  
   const alerts = [
     {
       id: 1,
@@ -61,126 +64,80 @@ export function LowStockAlerts() {
 
   const severityStyles = {
     critical: {
-      bg: 'bg-error/10 border-error/50',
+      bg: 'bg-error/5 hover:bg-error/10 border-error/20 hover:border-error/40',
       text: 'text-error',
-      badge: 'bg-error/20 text-error',
+      badge: 'bg-error/10 text-error',
       icon: AlertCircle,
     },
     warning: {
-      bg: 'bg-warning/10 border-warning/50',
-      text: 'text-warning',
-      badge: 'bg-warning/20 text-warning',
+      bg: 'bg-warning/5 hover:bg-warning/10 border-warning/20 hover:border-warning/40',
+      text: 'text-warning-dark',
+      badge: 'bg-warning/10 text-warning-dark',
       icon: TrendingDown,
     },
     expiry: {
-      bg: 'bg-error/10 border-error/50',
-      text: 'text-error',
-      badge: 'bg-error/20 text-error',
+      bg: 'bg-indigo-50/50 hover:bg-indigo-50 border-indigo-200 hover:border-indigo-300 dark:bg-indigo-950/20 dark:hover:bg-indigo-950/40 dark:border-indigo-800/50',
+      text: 'text-indigo-600 dark:text-indigo-400',
+      badge: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300',
       icon: Clock,
     },
   };
 
   return (
-    <div className="space-y-4">
-      {/* Alert Summary */}
-      <div className="grid gap-3 md:grid-cols-3">
-        <Card className="border-error/30">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Critical Alerts</p>
-                <p className="text-2xl font-bold text-error">2</p>
-              </div>
-              <AlertCircle className="h-8 w-8 text-error/30" />
-            </div>
-          </CardContent>
-        </Card>
+    <div className="space-y-3">
+      {alerts.map((alert) => {
+        const style = severityStyles[alert.severity as keyof typeof severityStyles];
+        const Icon = style.icon;
 
-        <Card className="border-warning/30">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Warning Alerts</p>
-                <p className="text-2xl font-bold text-warning">2</p>
-              </div>
-              <TrendingDown className="h-8 w-8 text-warning/30" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-error/30">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Expiry Alerts</p>
-                <p className="text-2xl font-bold text-error">1</p>
-              </div>
-              <Clock className="h-8 w-8 text-error/30" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Alerts List */}
-      <div className="space-y-3">
-        {alerts.map((alert) => {
-          const style = severityStyles[alert.severity as keyof typeof severityStyles];
-          const Icon = style.icon;
-
-          return (
-            <Card key={alert.id} className={`border-2 ${style.bg}`}>
-              <CardContent className="p-4">
-                <div className="flex items-start gap-4">
-                  {/* Icon */}
-                  <Icon className={`h-6 w-6 ${style.text} flex-shrink-0 mt-1`} />
-
-                  {/* Content */}
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold">{alert.medication}</h3>
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${style.badge}`}>
-                        {alert.severity.charAt(0).toUpperCase() + alert.severity.slice(1)}
-                      </span>
-                    </div>
-
-                    <p className="text-sm text-muted-foreground">{alert.message}</p>
-
-                    {/* Stats */}
-                    <div className="grid gap-2 md:grid-cols-4 text-sm">
-                      <div>
-                        <p className="text-muted-foreground text-xs">Current Stock</p>
-                        <p className="font-medium">{alert.currentStock} units</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground text-xs">Minimum Required</p>
-                        <p className="font-medium">{alert.minimumStock} units</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground text-xs">Expiry in</p>
-                        <p className="font-medium">{alert.expiryDays} days</p>
-                      </div>
-                      {alert.reorderQuantity > 0 && (
-                        <div>
-                          <p className="text-muted-foreground text-xs">Suggested Reorder</p>
-                          <p className="font-medium">{alert.reorderQuantity} units</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  {alert.reorderQuantity > 0 && (
-                    <Button size="sm" className="bg-primary hover:bg-primary-light gap-1">
-                      <Zap className="h-3 w-3" />
-                      Reorder
-                    </Button>
-                  )}
+        return (
+          <div key={alert.id} className={`p-3 rounded-xl border transition-colors group ${style.bg}`}>
+            <div className="flex items-start justify-between">
+              <div className="flex gap-2 items-start">
+                <div className="mt-0.5">
+                  <Icon className={`h-4 w-4 ${style.text}`} />
                 </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+                <div>
+                  <h4 className={`font-bold text-sm tracking-tight transition-colors ${style.text}`}>
+                    {alert.medication}
+                  </h4>
+                  <div className="flex flex-wrap items-center gap-2 mt-1">
+                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${style.badge}`}>
+                      {alert.currentStock} left (Min: {alert.minimumStock})
+                    </span>
+                    {alert.severity === 'expiry' && (
+                      <span className="text-[10px] text-muted-foreground font-medium">
+                        Expires: {alert.expiryDays}d
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {alert.reorderQuantity > 0 && (
+              <div className="mt-3 flex gap-2">
+                <Button 
+                  size="sm" 
+                  className={`w-full text-xs font-semibold shadow-sm ${
+                    alert.severity === 'critical' ? 'bg-error hover:bg-red-700 text-white' : 
+                    alert.severity === 'warning' ? 'bg-amber-500 hover:bg-amber-600 text-white' : 
+                    'bg-indigo-600 hover:bg-indigo-700 text-white'
+                  }`}
+                  onClick={() => {
+                    toast({
+                      title: "Purchase Order Initiated",
+                      description: `Generating PO for ${alert.reorderQuantity} units of ${alert.medication}...`,
+                    });
+                  }}
+                >
+                  <Zap className="h-3 w-3 mr-1" />
+                  Express Reorder
+                </Button>
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

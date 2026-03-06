@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ConfidenceRing } from "@/components/ui/confidence-ring";
 import { AIActionBar } from "@/components/ui/ai-action-bar";
 import { AWSBadge } from "@/components/ui/aws-badge";
+import { useToast } from "@/hooks/use-toast";
 
 interface SOAPData {
   subjective: string;
@@ -64,6 +65,7 @@ const soapSections = [
 ];
 
 export function SOAPNoteBuilder({ data, onUpdate }: SOAPNoteBuilderProps) {
+  const { toast } = useToast();
   const [expandedSections, setExpandedSections] = useState<
     Record<string, boolean>
   >({
@@ -105,39 +107,39 @@ export function SOAPNoteBuilder({ data, onUpdate }: SOAPNoteBuilderProps) {
       {soapSections.map((section) => (
         <Card
           key={section.key}
-          className={`border-l-4 ${section.color} overflow-hidden`}
+          className={`border-l-4 ${section.color} overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 bg-white dark:bg-slate-900 border-border`}
         >
           {/* Section Header */}
           <button
             onClick={() => toggleSection(section.key)}
-            className="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors"
+            className="w-full px-4 py-3.5 flex items-center justify-between hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors group"
           >
             <div className="flex items-center gap-3">
-              <span className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-sm text-slate-700">
+              <span className={`h-8 w-8 rounded-full ${section.color.replace('border-l', 'bg').replace('500', '100 dark:bg-opacity-20 text-foreground')} flex items-center justify-center font-bold text-sm shadow-sm group-hover:scale-105 transition-transform`}>
                 {section.label}
               </span>
-              <span className="font-semibold text-foreground">
+              <span className="font-semibold text-foreground tracking-tight">
                 {section.title}
               </span>
               {acceptedSections[section.key] && (
-                <span className="text-xs text-green-600 font-medium">
-                  ✓ AI Accepted
+                <span className="text-xs text-green-600 dark:text-green-400 font-medium flex items-center gap-1 bg-green-50 dark:bg-green-950/30 px-2 py-0.5 rounded-full">
+                  ✓ AI Edited
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <ConfidenceRing score={section.confidence} size="sm" />
               {expandedSections[section.key] ? (
-                <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                <ChevronUp className="h-4 w-4 text-muted-foreground mr-1" />
               ) : (
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                <ChevronDown className="h-4 w-4 text-muted-foreground mr-1" />
               )}
             </div>
           </button>
 
           {/* Section Content */}
           {expandedSections[section.key] && (
-            <div className="px-4 pb-4 space-y-3">
+            <div className="px-4 pb-4 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
               {/* AI Suggestion */}
               <div className="bg-slate-50 rounded-lg p-3 border border-slate-200">
                 <p className="text-xs font-semibold text-muted-foreground mb-2">
@@ -179,6 +181,7 @@ export function SOAPNoteBuilder({ data, onUpdate }: SOAPNoteBuilderProps) {
         className="w-full"
         disabled={!isFilled}
         onClick={() => {
+          toast({ title: "SOAP Note Saved", description: "Clinical documentation securely saved to FHIR Record." });
           console.log("Saving SOAP note:", data);
         }}
       >

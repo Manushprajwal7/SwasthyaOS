@@ -4,8 +4,10 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Filter, MoreVertical, Phone, MessageSquare, X, Edit } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export function AppointmentList() {
+  const { toast } = useToast();
   const [filter, setFilter] = useState('all');
 
   const appointments = [
@@ -113,17 +115,16 @@ export function AppointmentList() {
       {/* Appointments List */}
       <div className="space-y-3">
         {filteredAppointments.map((apt) => (
-          <Card key={apt.id} className="hover:border-primary transition-colors">
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold">{apt.patientName}</h3>
-                    <span className="text-xs text-muted-foreground">ID: {apt.patientId}</span>
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[apt.status as keyof typeof statusColors]}`}>
-                      {apt.status.charAt(0).toUpperCase() + apt.status.slice(1)}
-                    </span>
-                  </div>
+          <div key={apt.id} className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 hover:border-indigo-200 transition-colors group">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1 space-y-2">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-sm text-foreground tracking-tight group-hover:text-indigo-600 transition-colors">{apt.patientName}</h3>
+                  <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">ID: {apt.patientId}</span>
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider font-bold ${statusColors[apt.status as keyof typeof statusColors]}`}>
+                    {apt.status}
+                  </span>
+                </div>
 
                   <div className="grid gap-2 md:grid-cols-4 text-sm">
                     <div>
@@ -147,24 +148,50 @@ export function AppointmentList() {
 
                 {/* Actions */}
                 <div className="flex gap-2">
-                  <Button size="sm" variant="ghost" title="Call patient">
-                    <Phone className="h-4 w-4 text-primary" />
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    title="Call patient"
+                    onClick={() => {
+                      toast({
+                        title: "Initiating Voice Call",
+                        description: `Calling ${apt.patientName}...`,
+                      });
+                    }}
+                  >
+                    <Phone className="h-4 w-4 text-indigo-600" />
                   </Button>
-                  <Button size="sm" variant="ghost" title="Send message">
-                    <MessageSquare className="h-4 w-4 text-primary" />
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    title="Send message"
+                    onClick={() => {
+                      toast({
+                        title: "Opening Secure SMS",
+                        description: `Drafting message to ${apt.patientName}...`,
+                      });
+                    }}
+                  >
+                    <MessageSquare className="h-4 w-4 text-indigo-600" />
                   </Button>
                   {apt.status !== 'cancelled' && (
-                    <Button size="sm" variant="ghost" title="Edit">
-                      <Edit className="h-4 w-4 text-primary" />
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      title="Edit"
+                      onClick={() => {
+                        toast({
+                          title: "Editing Schedule",
+                          description: `Opening modification panel for ${apt.patientName}.`,
+                        });
+                      }}
+                    >
+                      <Edit className="h-4 w-4 text-indigo-600" />
                     </Button>
                   )}
-                  <Button size="sm" variant="ghost" title="More options">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ))}
       </div>
     </div>

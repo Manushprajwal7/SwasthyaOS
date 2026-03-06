@@ -122,16 +122,13 @@ export function IndiaMap({
         className="w-full h-auto"
         style={{ maxHeight: "400px" }}
       >
-        {/* Background */}
-        <rect x="0" y="40" width="500" height="500" fill="#F8FAFC" />
-
         {/* States */}
         {Object.entries(statesPaths).map(([id, path]) => {
           const data = getStateData(id);
           const isSelected = selectedState === id;
           const isHovered = hoveredState === id;
-          const fillColor = data ? signalBgColors[data.signal] : "#E2E8F0";
-          const strokeColor = data ? signalColors[data.signal] : "#94A3B8";
+          const fillColor = data ? signalBgColors[data.signal] : "transparent";
+          const strokeColor = data ? signalColors[data.signal] : "#CBD5E1";
 
           return (
             <g key={id}>
@@ -195,7 +192,7 @@ export function IndiaMap({
 
       {/* Hover Tooltip */}
       {hoveredState && (
-        <div className="absolute top-4 right-4 bg-white border border-slate-200 rounded-lg shadow-lg p-3 z-10">
+        <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm border border-slate-200/60 rounded-xl shadow-lg p-4 z-10 w-48 transition-all animate-in fade-in zoom-in-95 duration-200">
           {(() => {
             const data = getStateData(hoveredState);
             if (!data) return null;
@@ -226,25 +223,25 @@ export function IndiaMap({
       )}
 
       {/* Legend */}
-      <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur rounded-lg p-3 text-xs">
-        <p className="font-semibold text-foreground mb-2">Signal Intensity</p>
-        <div className="space-y-1">
+      <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur rounded-xl shadow-sm border border-slate-200/50 p-3.5 text-xs">
+        <p className="font-bold text-slate-700 tracking-tight mb-2 uppercase text-[10px]">Signal Intensity</p>
+        <div className="space-y-1.5 flex flex-col">
           {Object.entries(signalColors).map(([key, color]) => (
             <div key={key} className="flex items-center gap-2">
               <span
-                className="h-3 w-3 rounded"
+                className="h-2.5 w-2.5 rounded shadow-sm"
                 style={{ backgroundColor: color }}
               />
-              <span className="capitalize">{key}</span>
+              <span className="capitalize font-medium text-slate-600">{key}</span>
             </div>
           ))}
         </div>
       </div>
 
       {/* Stats */}
-      <div className="absolute top-4 left-4 bg-white/90 backdrop-blur rounded-lg p-3 text-xs">
-        <p className="font-semibold text-foreground">742 Districts Monitored</p>
-        <p className="text-muted-foreground">Real-time surveillance active</p>
+      <div className="absolute top-4 left-4 bg-white/90 backdrop-blur shadow-sm border border-slate-200/50 rounded-xl p-3 text-xs">
+        <p className="font-bold text-foreground tracking-tight">742 Districts Monitored</p>
+        <p className="text-[10px] uppercase font-bold text-teal-600 tracking-wider mt-0.5">Real-time telemetry</p>
       </div>
     </div>
   );

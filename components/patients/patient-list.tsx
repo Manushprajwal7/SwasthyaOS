@@ -37,12 +37,15 @@ export function PatientList({
   };
 
   return (
-    <Card className="p-6 h-fit">
-      <div className="flex items-center gap-2 mb-4">
-        <Users className="h-5 w-5 text-primary" />
-        <h3 className="font-semibold text-foreground">
-          Patients ({patients.length})
+    <div className="h-fit">
+      <div className="flex items-center gap-2 mb-4 px-1">
+        <Users className="h-5 w-5 text-indigo-600" />
+        <h3 className="font-semibold text-foreground tracking-tight text-sm">
+          Patients
         </h3>
+        <span className="text-xs bg-slate-100 dark:bg-slate-800 text-muted-foreground px-2 py-0.5 rounded-full ml-auto">
+          {patients.length} Total
+        </span>
       </div>
 
       <div className="space-y-2">
@@ -101,6 +104,6 @@ export function PatientList({
           })
         )}
       </div>
-    </Card>
+    </div>
   );
 }

@@ -24,9 +24,10 @@ interface KPIData {
 
 interface KpiGridProps {
   metrics: KPIData;
+  className?: string;
 }
 
-export function KpiGrid({ metrics }: KpiGridProps) {
+export function KpiGrid({ metrics, className }: KpiGridProps) {
   const getBedOccupancyColor = (value: number) => {
     if (value > 85) return "bg-red-500";
     if (value > 70) return "bg-amber-500";
@@ -85,7 +86,7 @@ export function KpiGrid({ metrics }: KpiGridProps) {
   ];
 
   return (
-    <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+    <div className={className || "grid gap-4 grid-cols-2 lg:grid-cols-4"}>
       {kpiCards.map((kpi) => (
         <Card
           key={kpi.label}

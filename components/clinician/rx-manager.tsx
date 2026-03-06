@@ -13,6 +13,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AWSBadge } from "@/components/ui/aws-badge";
 import { ConfidenceRing } from "@/components/ui/confidence-ring";
+import { useToast } from "@/hooks/use-toast";
 
 interface Medication {
   id: string;
@@ -67,9 +68,39 @@ const drugSuggestions = [
 ];
 
 export function RxManager() {
+  const { toast } = useToast();
   const [medications, setMedications] = useState<Medication[]>(mockMedications);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const handleAddDrug = (drugName: string) => {
+    const newMed: Medication = {
+      id: Date.now().toString(),
+      drug: drugName,
+      dose: "Custom",
+      frequency: "OD",
+      duration: "5 days",
+      route: "Oral",
+      interaction: "clear",
+      pmjayCovered: true,
+    };
+    setMedications([...medications, newMed]);
+    setSearchQuery("");
+    setShowSuggestions(false);
+    toast({
+      title: "Medication Added",
+      description: `${drugName} added to the prescription.`,
+    });
+  };
+
+  const handleRemoveDrug = (id: string, drugName: string) => {
+    setMedications(medications.filter((m) => m.id !== id));
+    toast({
+      title: "Medication Removed",
+      description: `${drugName} removed from the prescription.`,
+      variant: "destructive",
+    });
+  };
 
   const interactionConfig = {
     clear: { icon: CheckCircle, color: "text-green-600", label: "✅ Clear" },
@@ -128,10 +159,7 @@ export function RxManager() {
                       <button
                         key={drug}
                         className="w-full px-4 py-2 text-left text-sm hover:bg-slate-50"
-                        onClick={() => {
-                          setSearchQuery("");
-                          setShowSuggestions(false);
-                        }}
+                        onClick={() => handleAddDrug(drug)}
                       >
                         <Plus className="inline h-3 w-3 mr-2 text-teal-600" />
                         {drug}
@@ -207,7 +235,10 @@ export function RxManager() {
                           )}
                         </td>
                         <td className="py-3">
-                          <button className="text-slate-400 hover:text-red-600">
+                          <button 
+                            className="text-slate-400 hover:text-red-600"
+                            onClick={() => handleRemoveDrug(med.id, med.drug)}
+                          >
                             <Trash2 className="h-4 w-4" />
                           </button>
                         </td>
@@ -232,11 +263,11 @@ export function RxManager() {
 
           {/* Action Buttons */}
           <div className="flex gap-3">
-            <Button className="flex-1">
+            <Button className="flex-1" onClick={() => toast({ title: "Prescription Saved", description: "Rx has been signed and saved to patient record." })}>
               <CheckCircle className="h-4 w-4 mr-2" />
               Save Prescription
             </Button>
-            <Button variant="outline">Print Rx</Button>
+            <Button variant="outline" onClick={() => window.print()}>Print Rx</Button>
           </div>
         </div>
 
@@ -318,7 +349,10 @@ export function RxManager() {
                   Weight-based dosing
                 </p>
               </div>
-              <button className="px-3 py-1.5 text-xs font-medium text-teal-600 border border-teal-200 rounded-lg hover:bg-teal-50">
+              <button 
+                className="px-3 py-1.5 text-xs font-medium text-teal-600 border border-teal-200 rounded-lg hover:bg-teal-50"
+                onClick={() => toast({ title: "Calculator Enabled", description: "Pediatric dose calculator activated." })}
+              >
                 Enable
               </button>
             </div>

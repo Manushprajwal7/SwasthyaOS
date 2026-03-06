@@ -6,8 +6,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AWSBadge } from "@/components/ui/aws-badge";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 
 export function DischargeTab() {
+  const { toast } = useToast();
   const [language, setLanguage] = useState("en");
   const [showPatientVersion, setShowPatientVersion] = useState(false);
 
@@ -98,11 +100,11 @@ export function DischargeTab() {
 
         {/* Actions */}
         <div className="ml-auto flex gap-2">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => window.print()}>
             <Print className="h-4 w-4 mr-1" />
             Print
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => toast({ title: "Downloading PDF", description: "Generating discharge summary PDF..." })}>
             <Download className="h-4 w-4 mr-1" />
             Download PDF
           </Button>

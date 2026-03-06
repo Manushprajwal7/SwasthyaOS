@@ -103,7 +103,7 @@ export function SystemTrustStatus() {
       </div>
 
       {/* Metric Cards Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-3 mt-4">
         {trustMetrics.map((metric) => (
           <div
             key={metric.name}
@@ -126,7 +126,7 @@ export function SystemTrustStatus() {
               <div className="text-xl font-bold text-foreground">
                 {metric.value}%
               </div>
-              <p className="text-xs font-medium text-muted-foreground mt-0.5">
+              <p className="text-xs font-medium text-muted-foreground mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis">
                 {metric.name}
               </p>
             </div>

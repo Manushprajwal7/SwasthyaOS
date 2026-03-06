@@ -316,7 +316,11 @@ export function useSimulation(options: UseSimulationOptions = {}) {
       .map(() => generatePatient())
   );
   const [alerts, setAlerts] = useState<SimulatedAlert[]>([]);
-  const [aiEvents, setAIEvents] = useState<SimulatedAIEvent[]>([]);
+  const [aiEvents, setAIEvents] = useState<SimulatedAIEvent[]>(() =>
+    Array(5)
+      .fill(0)
+      .map(() => generateAIEvent())
+  );
   const [metrics, setMetrics] = useState<SimulatedMetrics>({
     totalPatients: 847,
     waitingPatients: 5,

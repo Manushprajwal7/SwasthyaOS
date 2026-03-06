@@ -2,11 +2,7 @@
 
 import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ConsultationTab } from "./consultation-tab";
-import { SoapTab } from "./soap-tab";
-import { DischargeTab } from "./discharge-tab";
-import { RxTab } from "./rx-tab";
+
 import { useLanguage } from "@/contexts/language-context";
 import { FHIRBadge } from "@/components/ui/fhir-badge";
 import { AWSBadge } from "@/components/ui/aws-badge";
@@ -20,7 +16,18 @@ import {
   User,
   Heart,
   Shield,
+  Mic,
+  Plus,
+  Calendar
 } from "lucide-react";
+
+import { VoiceCapturePanel } from "./voice-capture-panel";
+import { SOAPNoteBuilder } from "./soap-note-builder";
+import { AIRecommendations } from "./ai-recommendations";
+import { RxManager } from "./rx-manager";
+import { DischargeTab } from "./discharge-tab";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 // Current patient data with proper UHID and ABHA ID formats
 const currentPatient = {
@@ -39,7 +46,14 @@ const currentPatient = {
 
 export function ClinicianWorkspaceContent() {
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState("consultation");
+  const { toast } = useToast();
+  const [recordingActive, setRecordingActive] = useState(false);
+  const [soapData, setSoapData] = useState({
+    subjective: "",
+    objective: "",
+    assessment: "",
+    plan: "",
+  });
 
   return (
     <div className="p-6 lg:p-8 space-y-6 max-w-full">
@@ -50,7 +64,7 @@ export function ClinicianWorkspaceContent() {
             {t("clinician.title")}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {t("clinician.subtitle")}
+            Command Center
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -146,64 +160,130 @@ export function ClinicianWorkspaceContent() {
         </div>
       </Card>
 
-      {/* ===== Workspace Tabs ===== */}
-      <Tabs
-        value={activeTab}
-        onValueChange={setActiveTab}
-        className="w-full animate-fade-in-up"
-        style={{ animationDelay: "0.1s" }}
-      >
-        <TabsList className="inline-flex h-11 items-center justify-start gap-1 rounded-xl bg-slate-100 dark:bg-slate-800/50 p-1">
-          <TabsTrigger
-            value="consultation"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:text-teal-700 dark:data-[state=active]:text-teal-400 data-[state=active]:shadow-sm transition-all"
-          >
-            <Stethoscope className="h-4 w-4" />
-            {t("clinician.consultation.live")}
-          </TabsTrigger>
-          <TabsTrigger
-            value="soap"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:text-teal-700 dark:data-[state=active]:text-teal-400 data-[state=active]:shadow-sm transition-all"
-          >
-            <ClipboardList className="h-4 w-4" />
-            SOAP Builder
-          </TabsTrigger>
-          <TabsTrigger
-            value="discharge"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:text-teal-700 dark:data-[state=active]:text-teal-400 data-[state=active]:shadow-sm transition-all"
-          >
-            <FileText className="h-4 w-4" />
-            {t("clinician.discharge.summary")}
-          </TabsTrigger>
-          <TabsTrigger
-            value="rx"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:text-teal-700 dark:data-[state=active]:text-teal-400 data-[state=active]:shadow-sm transition-all"
-          >
-            <Pill className="h-4 w-4" />
-            Rx Manager
-          </TabsTrigger>
-        </TabsList>
+      {/* ===== 3-Column Command Center Workspace ===== */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pb-6 animate-fade-in-up md:h-[calc(100vh-16rem)]" style={{ animationDelay: "0.1s" }}>
+        
+        {/* ========================================================
+            LEFT PILLAR (Col Span 3): Context & History
+            ======================================================== */}
+        <div className="lg:col-span-3 space-y-4 flex flex-col h-full overflow-y-auto custom-scrollbar pr-1">
+          {/* Quick Actions Bar */}
+          <Card className="p-4 flex flex-col gap-3">
+             <h4 className="font-semibold text-foreground text-sm">Quick Actions</h4>
+             <Button variant="outline" size="sm" className="gap-2 justify-start" onClick={() => toast({ title: "Add Vitals", description: "Opening Vitals entry module..." })}>
+               <Stethoscope className="h-4 w-4" />
+               Add Vitals
+             </Button>
+             <Button variant="outline" size="sm" className="gap-2 justify-start" onClick={() => toast({ title: "Attach Lab Report", description: "Opening file uploader..." })}>
+               <FileText className="h-4 w-4" />
+               Attach Lab Report
+             </Button>
+             <Button variant="outline" size="sm" className="gap-2 justify-start" onClick={() => toast({ title: "Schedule Follow-up", description: "Opening calendar scheduler..." })}>
+               <Calendar className="h-4 w-4" />
+               Schedule Follow-up
+             </Button>
+             <Button variant={recordingActive ? "destructive" : "default"} size="sm" className="gap-2 justify-start" onClick={() => setRecordingActive(!recordingActive)}>
+               <Mic className="h-4 w-4" />
+               {recordingActive ? "Stop Recording" : "Voice Capture"}
+             </Button>
+          </Card>
 
-        {/* Live Consultation Tab */}
-        <TabsContent value="consultation" className="mt-6 space-y-6">
-          <ConsultationTab />
-        </TabsContent>
+          {/* Voice Capture Panel (compact) */}
+          <VoiceCapturePanel
+            isRecording={recordingActive}
+            onToggleRecording={() => setRecordingActive(!recordingActive)}
+            transcribedText={soapData.subjective}
+            onTranscriptionUpdate={(text) =>
+              setSoapData({ ...soapData, subjective: text })
+            }
+          />
 
-        {/* SOAP Builder Tab */}
-        <TabsContent value="soap" className="mt-6 space-y-6">
-          <SoapTab />
-        </TabsContent>
+          {/* Recent History */}
+          <Card className="p-4 flex-1">
+            <h4 className="font-semibold text-foreground text-sm mb-3 flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-teal-600" />
+              Recent Visits
+            </h4>
+            <div className="space-y-2">
+              <div className="flex items-start gap-3 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                <div className="text-xs text-muted-foreground font-mono whitespace-nowrap">
+                  Oct 15
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground">
+                    Diabetes Review
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    HbA1c: 7.2% | Medication adjusted
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                <div className="text-xs text-muted-foreground font-mono whitespace-nowrap">
+                  Jul 22
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground">
+                    Annual Physical
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    All vitals normal
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
 
-        {/* Discharge Summary Tab */}
-        <TabsContent value="discharge" className="mt-6 space-y-6">
-          <DischargeTab />
-        </TabsContent>
+        {/* ========================================================
+            CENTER PILLAR (Col Span 6): Clinical Documentation
+            ======================================================== */}
+        <div className="lg:col-span-6 space-y-4 flex flex-col h-full overflow-y-auto custom-scrollbar px-1">
+          <div className="flex flex-col gap-6 flex-1">
+            <SOAPNoteBuilder data={soapData} onUpdate={setSoapData} />
+            
+            <Card className="p-0 overflow-hidden shrink-0 mt-auto border border-border shadow-sm">
+              <div className="bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-950/30 dark:to-emerald-950/30 px-4 py-3 border-b border-border">
+                <h3 className="font-semibold text-foreground flex items-center gap-2">
+                  <span className="p-1 rounded bg-teal-100 dark:bg-teal-900 text-teal-600">
+                     <Pill className="h-4 w-4" />
+                  </span>
+                  Prescriptions (Rx)
+                </h3>
+              </div>
+              <div className="p-4 bg-white dark:bg-slate-900">
+                <RxManager />
+              </div>
+            </Card>
+          </div>
+        </div>
 
-        {/* Rx Manager Tab */}
-        <TabsContent value="rx" className="mt-6 space-y-6">
-          <RxTab />
-        </TabsContent>
-      </Tabs>
+        {/* ========================================================
+            RIGHT PILLAR (Col Span 3): AI Intelligence & Output
+            ======================================================== */}
+        <div className="lg:col-span-3 space-y-4 flex flex-col h-full overflow-y-auto custom-scrollbar pl-1">
+          <AIRecommendations soapData={soapData} />
+          
+          <Card className="p-0 overflow-hidden mt-auto border border-border shadow-sm shrink-0">
+             <div className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800/80 dark:to-slate-900 px-4 py-3 border-b border-border">
+                <h3 className="font-semibold text-foreground flex items-center gap-2">
+                  <span className="p-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-600">
+                     <FileText className="h-4 w-4" />
+                  </span>
+                  Discharge Summary
+                </h3>
+             </div>
+             <div className="p-4 text-sm text-foreground space-y-4">
+                <p className="text-xs text-muted-foreground mb-4">
+                  Review the auto-generated patient discharge summary below based on current SOAP notes.
+                </p>
+                <div className="transition-opacity duration-300">
+                  <DischargeTab />
+                </div>
+             </div>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import React from 'react';
 import { FileText, Download, AlertCircle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 interface SituationReportProps {
   syndrome: string;
@@ -16,6 +17,7 @@ export function SituationReport({
   timeRange,
   selectedDistrict,
 }: SituationReportProps) {
+  const { toast } = useToast();
   const syndromeLabels: Record<string, string> = {
     all: 'All Syndromes',
     fever: 'Fever',
@@ -65,72 +67,83 @@ NEXT STEPS:
   `;
 
   return (
-    <Card className="p-8">
-      <div className="flex items-start justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <FileText className="h-6 w-6 text-primary" />
-          <h3 className="text-xl font-semibold text-foreground">
-            Auto-Generated Situation Report
-          </h3>
+    <div className="bg-white dark:bg-slate-900 border border-border shadow-sm rounded-xl overflow-hidden flex flex-col">
+      <div className="p-4 border-b border-border flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
+        <div className="flex items-center gap-2">
+          <FileText className="h-5 w-5 text-indigo-600" />
+          <div>
+            <h3 className="font-bold text-foreground tracking-tight text-sm">
+              Auto-Generated Situation Report
+            </h3>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Automated narrative synthesis</p>
+          </div>
         </div>
-        <Button variant="outline" size="sm">
-          <Download className="h-4 w-4 mr-2" />
-          Download PDF
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="h-7 text-xs"
+          onClick={() => {
+            toast({
+              title: "Download Started",
+              description: `SitRep-${syndromeLabels[syndrome].replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf is generating.`,
+            });
+          }}
+        >
+          <Download className="h-3.5 w-3.5 mr-1" />
+          PDF
         </Button>
       </div>
 
-      {/* Report Metadata */}
-      <div className="grid gap-4 md:grid-cols-3 mb-6 pb-6 border-b border-border">
-        <div>
-          <p className="text-xs font-semibold text-muted-foreground">
-            REPORT TYPE
-          </p>
-          <p className="text-sm font-semibold text-foreground">
-            {syndromeLabels[syndrome]}
-          </p>
+      <div className="p-5">
+        {/* Report Metadata */}
+        <div className="grid grid-cols-3 gap-3 mb-5 pb-5 border-b border-dashed border-border/60">
+          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-2.5 text-center border border-border">
+            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
+              Syndrome
+            </p>
+            <p className="text-xs font-semibold text-foreground truncate">
+              {syndromeLabels[syndrome]}
+            </p>
+          </div>
+          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-2.5 text-center border border-border">
+            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
+              Window
+            </p>
+            <p className="text-xs font-semibold text-foreground">{timeRange}H</p>
+          </div>
+          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-2.5 text-center border border-border">
+            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
+              Generated
+            </p>
+            <p className="text-xs font-semibold text-foreground">
+              {new Date().toLocaleDateString()}
+            </p>
+          </div>
         </div>
-        <div>
-          <p className="text-xs font-semibold text-muted-foreground">
-            TIME PERIOD
-          </p>
-          <p className="text-sm font-semibold text-foreground">{timeRange} hours</p>
-        </div>
-        <div>
-          <p className="text-xs font-semibold text-muted-foreground">
-            GENERATED
-          </p>
-          <p className="text-sm font-semibold text-foreground">
-            {new Date().toLocaleDateString()}
-          </p>
-        </div>
-      </div>
 
-      {/* Report Content */}
-      <div className="prose prose-sm max-w-none text-foreground">
-        <div className="whitespace-pre-wrap text-sm leading-relaxed font-mono text-foreground/90">
-          {reportContent}
+        {/* Report Content */}
+        <div className="prose prose-sm max-w-none">
+          <div className="whitespace-pre-wrap text-[13px] leading-relaxed font-mono text-slate-700 dark:text-slate-300 p-4 bg-slate-50/50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-800">
+            {reportContent.trim()}
+          </div>
         </div>
-      </div>
 
-      {/* Disclaimer */}
-      <div className="mt-8 pt-6 border-t border-border">
-        <div className="flex gap-3 rounded-lg bg-warning/5 p-4 border border-warning/20">
-          <AlertCircle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
-          <div className="text-xs text-warning/90 leading-relaxed">
-            <strong>Data Quality Notice:</strong> This report is generated from real-time syndromic surveillance. Findings are provisional and subject to revision as confirmed case data arrives. Healthcare officials should validate with field investigations before taking action.
+        {/* Disclaimer */}
+        <div className="mt-5 pt-5 border-t border-border flex flex-col gap-3">
+          <div className="flex gap-3 rounded-lg bg-amber-50/50 p-3 border border-amber-200/50 items-start">
+            <AlertCircle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
+            <div className="text-[11px] text-amber-900/80 leading-relaxed">
+              <strong>Provisional Data:</strong> This report is generated from real-time syndromic surveillance. Findings are subject to revision as confirmed cases arrive. Validate with field investigations before declaring an outbreak.
+            </div>
+          </div>
+          
+          <div className="rounded-lg bg-indigo-50/50 p-3 border border-indigo-200/50">
+            <div className="text-[11px] text-indigo-900/80 leading-relaxed">
+              <strong>Regulatory Compliance:</strong> Follows NITI Aayog surveillance protocols. All data anonymized per guidelines.
+            </div>
           </div>
         </div>
       </div>
-
-      {/* Regulatory Statement */}
-      <div className="mt-4 p-4 rounded-lg bg-primary/5 border border-primary/20">
-        <p className="text-xs text-primary font-semibold mb-1">
-          REGULATORY COMPLIANCE
-        </p>
-        <p className="text-xs text-primary/90 leading-relaxed">
-          This report follows NITI Aayog surveillance protocols and WHO epidemiological standards. All data is anonymized per HIPAA guidelines. The system is certified for government use.
-        </p>
-      </div>
-    </Card>
+    </div>
   );
 }
