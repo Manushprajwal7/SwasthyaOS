@@ -1,4 +1,5 @@
-import { geminiModel, safetySettings, generationConfig } from "./gemini-client";
+import { InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
+import { bedrockClient, BEDROCK_MODEL_ID, prepareClaudePayload } from "./bedrock-client";
 
 export interface AIInsight {
   title: string;
@@ -49,13 +50,17 @@ Format as JSON:
 Make insights realistic, actionable, and relevant to Indian healthcare context.`;
 
   try {
-    const result = await geminiModel.generateContent({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      safetySettings,
-      generationConfig,
+    const payload = prepareClaudePayload(prompt);
+    const command = new InvokeModelCommand({
+      modelId: BEDROCK_MODEL_ID,
+      contentType: "application/json",
+      accept: "application/json",
+      body: payload,
     });
 
-    const text = result.response.text();
+    const result = await bedrockClient.send(command);
+    const responseBody = JSON.parse(new TextDecoder().decode(result.body));
+    const text = responseBody.content[0].text;
     const jsonMatch = text.match(/\{[\s\S]*\}/);
 
     if (jsonMatch) {
@@ -133,13 +138,17 @@ Format as JSON array:
 }]`;
 
   try {
-    const result = await geminiModel.generateContent({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      safetySettings,
-      generationConfig,
+    const payload = prepareClaudePayload(prompt);
+    const command = new InvokeModelCommand({
+      modelId: BEDROCK_MODEL_ID,
+      contentType: "application/json",
+      accept: "application/json",
+      body: payload,
     });
 
-    const text = result.response.text();
+    const result = await bedrockClient.send(command);
+    const responseBody = JSON.parse(new TextDecoder().decode(result.body));
+    const text = responseBody.content[0].text;
     const jsonMatch = text.match(/\[[\s\S]*\]/);
 
     if (jsonMatch) {

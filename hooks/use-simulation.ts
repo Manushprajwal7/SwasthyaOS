@@ -310,11 +310,38 @@ export function useSimulation(options: UseSimulationOptions = {}) {
     metricUpdateInterval = 3000,
   } = options;
 
-  const [patients, setPatients] = useState<SimulatedPatient[]>(() =>
-    Array(5)
-      .fill(0)
-      .map(() => generatePatient())
-  );
+  const [patients, setPatients] = useState<SimulatedPatient[]>([]);
+
+  // Fetch real patients from DynamoDB API on mount
+  useEffect(() => {
+    if (!enabled) return;
+    
+    async function fetchRealPatients() {
+      try {
+        const res = await fetch("/api/patients");
+        if (res.ok) {
+          const dbPatients = await res.json();
+          const mapped = dbPatients.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            uhid: p.uhid,
+            abhaId: p.abhaId || "N/A",
+            age: p.age,
+            gender: p.gender,
+            chiefComplaint: p.district ? `From ${p.district}` : "Follow-up consultation",
+            triage: p.status === "critical" ? "critical" : p.status === "active" ? "urgent" : "standard",
+            waitTime: Math.floor(Math.random() * 20) + 5, // Keep some wait time for UI visualization
+            status: "waiting",
+          }));
+          setPatients(mapped);
+        }
+      } catch (error) {
+        console.error("Failed to fetch real patients for dashboard:", error);
+      }
+    }
+    
+    fetchRealPatients();
+  }, [enabled]);
   const [alerts, setAlerts] = useState<SimulatedAlert[]>([]);
   const [aiEvents, setAIEvents] = useState<SimulatedAIEvent[]>(() =>
     Array(5)
@@ -366,10 +393,10 @@ export function useSimulation(options: UseSimulationOptions = {}) {
           }
         }
 
-        // Add new patient
-        if (prev.length < 12) {
-          return [...prev, generatePatient()];
-        }
+        // Disabled adding new random patients to ensure we only show real DB data
+        // if (prev.length < 12) {
+        //   return [...prev, generatePatient()];
+        // }
 
         return prev;
       });

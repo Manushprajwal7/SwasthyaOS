@@ -1,4 +1,5 @@
-import { geminiModel, safetySettings, generationConfig } from "./gemini-client";
+import { InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
+import { bedrockClient, BEDROCK_MODEL_ID, prepareClaudePayload } from "./bedrock-client";
 
 export interface ChatMessage {
   role: "user" | "assistant";
@@ -53,13 +54,17 @@ IMPORTANT:
 Keep responses concise and professional.`;
 
   try {
-    const result = await geminiModel.generateContent({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      safetySettings,
-      generationConfig,
+    const payload = prepareClaudePayload(prompt);
+    const command = new InvokeModelCommand({
+      modelId: BEDROCK_MODEL_ID,
+      contentType: "application/json",
+      accept: "application/json",
+      body: payload,
     });
 
-    const response = result.response.text();
+    const result = await bedrockClient.send(command);
+    const responseBody = JSON.parse(new TextDecoder().decode(result.body));
+    const response = responseBody.content[0].text;
 
     return {
       message: response,
@@ -109,13 +114,17 @@ Format as JSON:
 }`;
 
   try {
-    const result = await geminiModel.generateContent({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      safetySettings,
-      generationConfig,
+    const payload = prepareClaudePayload(prompt);
+    const command = new InvokeModelCommand({
+      modelId: BEDROCK_MODEL_ID,
+      contentType: "application/json",
+      accept: "application/json",
+      body: payload,
     });
 
-    const text = result.response.text();
+    const result = await bedrockClient.send(command);
+    const responseBody = JSON.parse(new TextDecoder().decode(result.body));
+    const text = responseBody.content[0].text;
     const jsonMatch = text.match(/\{[\s\S]*\}/);
 
     if (jsonMatch) {

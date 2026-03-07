@@ -42,7 +42,7 @@ export function KpiGrid({ metrics, className }: KpiGridProps) {
       icon: <Stethoscope className="h-5 w-5" />,
       accentClass: "kpi-teal",
       iconBg: "bg-teal-50 dark:bg-teal-950/50 text-teal-600",
-      change: `+${Math.floor(Math.random() * 10) + 3} vs yesterday`,
+      change: "+7 vs yesterday",
       changeColor: "text-emerald-600",
       changeIcon: <TrendingUp className="h-3 w-3" />,
     },

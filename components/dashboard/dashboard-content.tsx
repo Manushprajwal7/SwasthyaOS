@@ -112,10 +112,10 @@ export function DashboardContent() {
       {/* ===== Welcome Banner ===== */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in-up">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-foreground font-heading">
+          <h1 className="text-2xl lg:text-3xl font-bold text-foreground font-heading" suppressHydrationWarning>
             {greeting}, Dr. Kumar 👋
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground flex items-center gap-2">
+          <p className="mt-1 text-sm text-muted-foreground flex items-center gap-2" suppressHydrationWarning>
             <Calendar className="h-3.5 w-3.5" />
             {dateStr}
             <span className="text-slate-300 dark:text-slate-600">|</span>

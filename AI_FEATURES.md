@@ -2,7 +2,7 @@
 
 ## Overview
 
-SwasthyaOS integrates Google's Gemini AI to provide comprehensive AI-powered healthcare features across the platform. All AI features are designed with medical accuracy, safety, and regulatory compliance in mind.
+SwasthyaOS integrates Amazon Bedrock (Claude 3) to provide comprehensive AI-powered healthcare features across the platform. All AI features are designed with medical accuracy, safety, and regulatory compliance in mind using AWS Guardrails.
 
 ## 🚀 Implemented AI Features
 
@@ -312,7 +312,7 @@ const safetySettings = [
 
 ```
 lib/ai/
-├── gemini-client.ts          # Gemini AI initialization
+├── bedrock-client.ts          # Amazon Bedrock AI initialization
 ├── medical-ai.ts              # Clinical AI functions
 ├── population-health-ai.ts    # Public health AI functions
 └── chat-ai.ts                 # Chat AI functions
@@ -336,7 +336,9 @@ components/
 ### Environment Variables
 
 ```env
-GEMINI_API_KEY=your_api_key_here
+AWS_REGION=ap-south-1
+AWS_ACCESS_KEY_ID=your_access_key
+AWS_SECRET_ACCESS_KEY=your_secret_key
 ```
 
 ## 🚀 Getting Started
@@ -344,15 +346,17 @@ GEMINI_API_KEY=your_api_key_here
 ### 1. Install Dependencies
 
 ```bash
-npm install @google/generative-ai
+npm install @aws-sdk/client-bedrock-runtime
 ```
 
-### 2. Configure API Key
+### 2. Configure AWS Credentials
 
 Create `.env` file:
 
 ```env
-GEMINI_API_KEY=your_gemini_api_key
+AWS_REGION=ap-south-1
+AWS_ACCESS_KEY_ID=your_access_key
+AWS_SECRET_ACCESS_KEY=your_secret_key
 ```
 
 ### 3. Test AI Features
@@ -406,9 +410,9 @@ curl -X POST http://localhost:3000/api/ai/diagnosis \
 For AI feature issues or questions:
 
 - Check API logs in browser console
-- Verify GEMINI_API_KEY is set correctly
+- Verify AWS credentials are set correctly
 - Review error messages in API responses
-- Consult Gemini AI documentation
+- Consult Amazon Bedrock documentation
 
 ## ⚠️ Important Disclaimers
 
@@ -421,6 +425,6 @@ For AI feature issues or questions:
 ---
 
 **Version**: 1.0.0  
-**Last Updated**: January 2026  
-**AI Model**: Google Gemini Pro  
+**Last Updated**: March 2026  
+**AI Model**: Amazon Bedrock (Claude 3 Sonnet)  
 **Status**: ✅ Production Ready

@@ -235,16 +235,26 @@ Three primary user roles:
 - Audit logging for all system interactions
 - Data anonymization for analytics
 
-## 🌐 Deployment
+## 🌐 Deployment (AWS Native)
 
-### Vercel (Recommended)
+SwasthyaOS is built to leverage scalable AWS infrastructure to meet healthcare compliance and data sovereignty requirements.
 
-1. Push code to GitHub
-2. Connect repository to Vercel
-3. Configure environment variables
-4. Deploy automatically on push
+### AWS Amplify (Frontend Deployment)
 
-### Docker
+1. Push code to GitHub/AWS CodeCommit
+2. Connect repository to AWS Amplify Console
+3. Configure build settings for Next.js 14+
+4. Deploy automatically on push with global CDN via CloudFront
+
+### Backend Architecture
+
+- **Compute**: AWS Lambda (serverless API endpoints), Amazon ECS (Fargate for background jobs), Amazon EC2 (Legacy integration and heavy ML)
+- **API**: Amazon API Gateway (REST + WebSockets)
+- **Database**: Amazon DynamoDB (Session & Events), AWS HealthLake (FHIR R4 Records), Amazon S3 (Document store)
+- **AI/ML Engine**: Amazon Bedrock (Claude 3 for clinical reasoning), Amazon Transcribe Medical, Amazon Comprehend Medical
+- **Spec-driven Workflow**: Kiro integrated into CI/CD for healthcare spec verification.
+
+### Docker (Local/ECS Development)
 
 ```dockerfile
 FROM node:18-alpine AS builder
@@ -258,7 +268,6 @@ WORKDIR /app
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/next.config.mjs ./next.config.mjs
 
 EXPOSE 3000
 CMD ["npm", "start"]

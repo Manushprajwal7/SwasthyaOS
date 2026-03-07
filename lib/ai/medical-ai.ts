@@ -1,4 +1,5 @@
-import { geminiModel, safetySettings, generationConfig } from "./gemini-client";
+import { InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
+import { bedrockClient, BEDROCK_MODEL_ID, prepareClaudePayload } from "./bedrock-client";
 
 export interface DiagnosisSuggestion {
   icd10Code: string;
@@ -60,14 +61,17 @@ Format your response as JSON array with this structure:
 IMPORTANT: Only provide medical information for educational purposes. Always recommend consulting with a qualified healthcare professional.`;
 
   try {
-    const result = await geminiModel.generateContent({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      safetySettings,
-      generationConfig,
+    const payload = prepareClaudePayload(prompt);
+    const command = new InvokeModelCommand({
+      modelId: BEDROCK_MODEL_ID,
+      contentType: "application/json",
+      accept: "application/json",
+      body: payload,
     });
 
-    const response = result.response;
-    const text = response.text();
+    const result = await bedrockClient.send(command);
+    const responseBody = JSON.parse(new TextDecoder().decode(result.body));
+    const text = responseBody.content[0].text;
 
     // Extract JSON from response
     const jsonMatch = text.match(/\[[\s\S]*\]/);
@@ -120,14 +124,17 @@ Format your response as JSON array:
 IMPORTANT: This is for educational purposes only. Final prescription decisions must be made by licensed healthcare professionals.`;
 
   try {
-    const result = await geminiModel.generateContent({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      safetySettings,
-      generationConfig,
+    const payload = prepareClaudePayload(prompt);
+    const command = new InvokeModelCommand({
+      modelId: BEDROCK_MODEL_ID,
+      contentType: "application/json",
+      accept: "application/json",
+      body: payload,
     });
 
-    const response = result.response;
-    const text = response.text();
+    const result = await bedrockClient.send(command);
+    const responseBody = JSON.parse(new TextDecoder().decode(result.body));
+    const text = responseBody.content[0].text;
 
     const jsonMatch = text.match(/\[[\s\S]*\]/);
     if (jsonMatch) {
@@ -185,13 +192,17 @@ Format as JSON:
 }`;
 
   try {
-    const result = await geminiModel.generateContent({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      safetySettings,
-      generationConfig,
+    const payload = prepareClaudePayload(prompt);
+    const command = new InvokeModelCommand({
+      modelId: BEDROCK_MODEL_ID,
+      contentType: "application/json",
+      accept: "application/json",
+      body: payload,
     });
 
-    const text = result.response.text();
+    const result = await bedrockClient.send(command);
+    const responseBody = JSON.parse(new TextDecoder().decode(result.body));
+    const text = responseBody.content[0].text;
     const jsonMatch = text.match(/\{[\s\S]*\}/);
 
     if (jsonMatch) {
@@ -253,13 +264,17 @@ Format as JSON:
 }`;
 
   try {
-    const result = await geminiModel.generateContent({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      safetySettings,
-      generationConfig,
+    const payload = prepareClaudePayload(prompt);
+    const command = new InvokeModelCommand({
+      modelId: BEDROCK_MODEL_ID,
+      contentType: "application/json",
+      accept: "application/json",
+      body: payload,
     });
 
-    const text = result.response.text();
+    const result = await bedrockClient.send(command);
+    const responseBody = JSON.parse(new TextDecoder().decode(result.body));
+    const text = responseBody.content[0].text;
     const jsonMatch = text.match(/\{[\s\S]*\}/);
 
     if (jsonMatch) {
@@ -313,13 +328,17 @@ Include:
 Use simple, clear language that patients can understand.`;
 
   try {
-    const result = await geminiModel.generateContent({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      safetySettings,
-      generationConfig,
+    const payload = prepareClaudePayload(prompt);
+    const command = new InvokeModelCommand({
+      modelId: BEDROCK_MODEL_ID,
+      contentType: "application/json",
+      accept: "application/json",
+      body: payload,
     });
 
-    return result.response.text();
+    const result = await bedrockClient.send(command);
+    const responseBody = JSON.parse(new TextDecoder().decode(result.body));
+    return responseBody.content[0].text;
   } catch (error) {
     console.error("Error generating discharge summary:", error);
     return "Unable to generate discharge summary. Please consult with your healthcare provider.";
