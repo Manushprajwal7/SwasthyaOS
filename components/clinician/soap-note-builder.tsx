@@ -8,6 +8,7 @@ import { ConfidenceRing } from "@/components/ui/confidence-ring";
 import { AIActionBar } from "@/components/ui/ai-action-bar";
 import { AWSBadge } from "@/components/ui/aws-badge";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/language-context";
 
 interface SOAPData {
   subjective: string;
@@ -21,51 +22,53 @@ interface SOAPNoteBuilderProps {
   onUpdate: (data: SOAPData) => void;
 }
 
-const soapSections = [
-  {
-    key: "subjective" as const,
-    label: "S",
-    title: "Subjective",
-    placeholder: "Patient complaints, symptoms, medical history...",
-    color: "border-l-teal-500",
-    aiSuggestion:
-      "67-year-old male presents with 3-day history of fever (38.9°C), progressive cough, and new onset breathlessness. Reports decreased oral intake. Background history of Type 2 Diabetes Mellitus.",
-    confidence: 0.91,
-  },
-  {
-    key: "objective" as const,
-    label: "O",
-    title: "Objective",
-    placeholder: "Vital signs, physical exam findings, lab results...",
-    color: "border-l-blue-500",
-    aiSuggestion:
-      "SpO2: 93% (room air) | Temp: 38.9°C | BP: 142/88 mmHg\nHR: 104 bpm | RR: 22/min | Auscultation: Bilateral crackles",
-    confidence: 0.88,
-  },
-  {
-    key: "assessment" as const,
-    label: "A",
-    title: "Assessment",
-    placeholder: "Clinical diagnosis, differential diagnoses...",
-    color: "border-l-amber-500",
-    aiSuggestion:
-      "Probable community-acquired pneumonia in a diabetic patient.\nSeverity: Moderate (CURB-65 score: 2)",
-    confidence: 0.84,
-  },
-  {
-    key: "plan" as const,
-    label: "P",
-    title: "Plan",
-    placeholder: "Treatment, medications, referrals, follow-up...",
-    color: "border-l-green-500",
-    aiSuggestion:
-      "1. CXR PA view STAT\n2. CBC, CRP, Blood culture x2\n3. IV Amoxicillin-Clavulanate 1.2g Q8H pending culture\n4. SpO2 monitoring Q2H\n5. Diabetes management review",
-    confidence: 0.87,
-  },
-];
-
 export function SOAPNoteBuilder({ data, onUpdate }: SOAPNoteBuilderProps) {
   const { toast } = useToast();
+  const { t } = useLanguage();
+  
+  const soapSections = [
+    {
+      key: "subjective" as const,
+      label: "S",
+      title: t("clinician.soap.subjective"),
+      placeholder: t("clinician.soap.subjective_placeholder"),
+      color: "border-l-teal-500",
+      aiSuggestion:
+        "67-year-old male presents with 3-day history of fever (38.9°C), progressive cough, and new onset breathlessness. Reports decreased oral intake. Background history of Type 2 Diabetes Mellitus.",
+      confidence: 0.91,
+    },
+    {
+      key: "objective" as const,
+      label: "O",
+      title: t("clinician.soap.objective"),
+      placeholder: t("clinician.soap.objective_placeholder"),
+      color: "border-l-blue-500",
+      aiSuggestion:
+        "SpO2: 93% (room air) | Temp: 38.9°C | BP: 142/88 mmHg\nHR: 104 bpm | RR: 22/min | Auscultation: Bilateral crackles",
+      confidence: 0.88,
+    },
+    {
+      key: "assessment" as const,
+      label: "A",
+      title: t("clinician.soap.assessment"),
+      placeholder: t("clinician.soap.assessment_placeholder"),
+      color: "border-l-amber-500",
+      aiSuggestion:
+        "Probable community-acquired pneumonia in a diabetic patient.\nSeverity: Moderate (CURB-65 score: 2)",
+      confidence: 0.84,
+    },
+    {
+      key: "plan" as const,
+      label: "P",
+      title: t("clinician.soap.plan"),
+      placeholder: t("clinician.soap.plan_placeholder"),
+      color: "border-l-green-500",
+      aiSuggestion:
+        "1. CXR PA view STAT\n2. CBC, CRP, Blood culture x2\n3. IV Amoxicillin-Clavulanate 1.2g Q8H pending culture\n4. SpO2 monitoring Q2H\n5. Diabetes management review",
+      confidence: 0.87,
+    },
+  ];
+
   const [expandedSections, setExpandedSections] = useState<
     Record<string, boolean>
   >({
@@ -98,7 +101,7 @@ export function SOAPNoteBuilder({ data, onUpdate }: SOAPNoteBuilderProps) {
       <div className="flex items-center justify-between">
         <h4 className="font-semibold text-foreground flex items-center gap-2">
           <FileText className="h-5 w-5 text-teal-600" />
-          SOAP Note
+          {t("clinician.soap.title")}
         </h4>
         <AWSBadge service="Amazon Bedrock" model="Claude 3 Sonnet" />
       </div>
@@ -123,7 +126,7 @@ export function SOAPNoteBuilder({ data, onUpdate }: SOAPNoteBuilderProps) {
               </span>
               {acceptedSections[section.key] && (
                 <span className="text-xs text-green-600 dark:text-green-400 font-medium flex items-center gap-1 bg-green-50 dark:bg-green-950/30 px-2 py-0.5 rounded-full">
-                  ✓ AI Edited
+                  ✓ {t("clinician.soap.ai_edited")}
                 </span>
               )}
             </div>
@@ -143,7 +146,7 @@ export function SOAPNoteBuilder({ data, onUpdate }: SOAPNoteBuilderProps) {
               {/* AI Suggestion */}
               <div className="bg-slate-50 rounded-lg p-3 border border-slate-200">
                 <p className="text-xs font-semibold text-muted-foreground mb-2">
-                  AI-DRAFTED
+                  {t("clinician.soap.ai_drafted")}
                 </p>
                 <p className="text-sm text-foreground whitespace-pre-line">
                   {section.aiSuggestion}
@@ -154,13 +157,27 @@ export function SOAPNoteBuilder({ data, onUpdate }: SOAPNoteBuilderProps) {
               <AIActionBar
                 confidence={section.confidence}
                 onAccept={() => handleAccept(section.key, section.aiSuggestion)}
-                onEdit={() => {}}
-                onReject={() => {}}
+                onEdit={() => {
+                  const el = document.getElementById(`soap-textarea-${section.key}`);
+                  if (el) (el as HTMLTextAreaElement).focus();
+                  toast({ 
+                    title: "Manual Edit Mode", 
+                    description: `You can now refine the AI-drafted ${section.title}.` 
+                  });
+                }}
+                onReject={() => {
+                  toast({ 
+                    title: "Draft Rejected", 
+                    description: `AI suggestion for ${section.title} dismissed.`,
+                    variant: "destructive"
+                  });
+                }}
                 showBadge={false}
               />
 
               {/* Manual Edit Area */}
               <textarea
+                id={`soap-textarea-${section.key}`}
                 value={data[section.key]}
                 onChange={(e) => handleUpdate(section.key, e.target.value)}
                 placeholder={section.placeholder}
@@ -168,7 +185,7 @@ export function SOAPNoteBuilder({ data, onUpdate }: SOAPNoteBuilderProps) {
               />
               {data[section.key] && (
                 <p className="text-xs text-muted-foreground">
-                  {data[section.key].length} characters
+                  {data[section.key].length} {t("clinician.soap.characters")}
                 </p>
               )}
             </div>
@@ -177,7 +194,7 @@ export function SOAPNoteBuilder({ data, onUpdate }: SOAPNoteBuilderProps) {
       ))}
 
       {/* Save Button */}
-      <Button
+       <Button
         className="w-full"
         disabled={!isFilled}
         onClick={() => {
@@ -186,14 +203,13 @@ export function SOAPNoteBuilder({ data, onUpdate }: SOAPNoteBuilderProps) {
         }}
       >
         <Save className="h-4 w-4 mr-2" />
-        Save SOAP Note
+        {t("clinician.soap.save")}
       </Button>
 
       {/* Clinical Tip */}
-      <Card className="bg-teal-50 border-teal-200 p-3">
+       <Card className="bg-teal-50 border-teal-200 p-3">
         <p className="text-xs text-teal-700 font-medium">
-          💡 Tip: Voice transcription auto-fills the Subjective field. Edit as
-          needed for accuracy.
+          💡 {t("clinician.soap.tip")}
         </p>
       </Card>
     </div>

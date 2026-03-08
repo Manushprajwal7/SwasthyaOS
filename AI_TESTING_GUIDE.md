@@ -4,7 +4,7 @@
 
 ### 1. Environment Setup ✅
 
-- [x] `.env.local` file created with GEMINI_API_KEY
+- [x] `.env.local` file created with Access_Key_ID and Secret_Access_Key
 - [x] API key is valid
 - [x] Build successful
 
@@ -30,7 +30,7 @@
 
 - If no response: Check browser console for errors (F12)
 - If "Failed to get response": Check server logs
-- If API error: Verify GEMINI_API_KEY in .env.local
+- If API error: Verify Access_Key_ID and Secret_Access_Key in .env.local
 
 ### 3. Test AI Diagnosis Assistant
 
@@ -205,7 +205,7 @@ npm run dev
 
 1. **If all tests pass**: AI features are working correctly!
 2. **If some tests fail**: Check specific troubleshooting section
-3. **If all tests fail**: Verify GEMINI_API_KEY and restart server
+3. **If all tests fail**: Verify Access_Key_ID and Secret_Access_Key and restart server
 
 ## Support
 

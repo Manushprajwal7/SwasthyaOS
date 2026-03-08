@@ -1,5 +1,4 @@
-import { InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
-import { bedrockClient, BEDROCK_MODEL_ID, prepareClaudePayload } from "./bedrock-client";
+import { invokeClaude } from "./bedrock-client";
 
 export interface HealthAnomaly {
   district: string;
@@ -68,17 +67,7 @@ Format as JSON array:
 }]`;
 
   try {
-    const payload = prepareClaudePayload(prompt);
-    const command = new InvokeModelCommand({
-      modelId: BEDROCK_MODEL_ID,
-      contentType: "application/json",
-      accept: "application/json",
-      body: payload,
-    });
-
-    const result = await bedrockClient.send(command);
-    const responseBody = JSON.parse(new TextDecoder().decode(result.body));
-    const text = responseBody.content[0].text;
+    const text = await invokeClaude("You are a public health AI analyzing disease surveillance data. Return JSON.", prompt);
     const jsonMatch = text.match(/\[[\s\S]*\]/);
 
     if (jsonMatch) {
@@ -131,17 +120,7 @@ Format as JSON:
 }`;
 
   try {
-    const payload = prepareClaudePayload(prompt);
-    const command = new InvokeModelCommand({
-      modelId: BEDROCK_MODEL_ID,
-      contentType: "application/json",
-      accept: "application/json",
-      body: payload,
-    });
-
-    const result = await bedrockClient.send(command);
-    const responseBody = JSON.parse(new TextDecoder().decode(result.body));
-    const text = responseBody.content[0].text;
+    const text = await invokeClaude("You are an epidemiological AI evaluating public health data. Return JSON.", prompt);
     const jsonMatch = text.match(/\{[\s\S]*\}/);
 
     if (jsonMatch) {
@@ -200,17 +179,7 @@ Format as JSON:
 }`;
 
   try {
-    const payload = prepareClaudePayload(prompt);
-    const command = new InvokeModelCommand({
-      modelId: BEDROCK_MODEL_ID,
-      contentType: "application/json",
-      accept: "application/json",
-      body: payload,
-    });
-
-    const result = await bedrockClient.send(command);
-    const responseBody = JSON.parse(new TextDecoder().decode(result.body));
-    const text = responseBody.content[0].text;
+    const text = await invokeClaude("You are an AI analyzing outbreak risks. Return JSON.", prompt);
     const jsonMatch = text.match(/\{[\s\S]*\}/);
 
     if (jsonMatch) {

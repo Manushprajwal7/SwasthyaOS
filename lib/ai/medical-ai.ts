@@ -1,5 +1,4 @@
-import { InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
-import { bedrockClient, BEDROCK_MODEL_ID, prepareClaudePayload } from "./bedrock-client";
+import { invokeClaude } from "./bedrock-client";
 
 export interface DiagnosisSuggestion {
   icd10Code: string;
@@ -61,17 +60,7 @@ Format your response as JSON array with this structure:
 IMPORTANT: Only provide medical information for educational purposes. Always recommend consulting with a qualified healthcare professional.`;
 
   try {
-    const payload = prepareClaudePayload(prompt);
-    const command = new InvokeModelCommand({
-      modelId: BEDROCK_MODEL_ID,
-      contentType: "application/json",
-      accept: "application/json",
-      body: payload,
-    });
-
-    const result = await bedrockClient.send(command);
-    const responseBody = JSON.parse(new TextDecoder().decode(result.body));
-    const text = responseBody.content[0].text;
+    const text = await invokeClaude("You are a medical AI assistant helping doctors with differential diagnosis. Return JSON.", prompt);
 
     // Extract JSON from response
     const jsonMatch = text.match(/\[[\s\S]*\]/);
@@ -124,17 +113,7 @@ Format your response as JSON array:
 IMPORTANT: This is for educational purposes only. Final prescription decisions must be made by licensed healthcare professionals.`;
 
   try {
-    const payload = prepareClaudePayload(prompt);
-    const command = new InvokeModelCommand({
-      modelId: BEDROCK_MODEL_ID,
-      contentType: "application/json",
-      accept: "application/json",
-      body: payload,
-    });
-
-    const result = await bedrockClient.send(command);
-    const responseBody = JSON.parse(new TextDecoder().decode(result.body));
-    const text = responseBody.content[0].text;
+    const text = await invokeClaude("You are a medical AI assistant helping doctors with medication recommendations. Return JSON.", prompt);
 
     const jsonMatch = text.match(/\[[\s\S]*\]/);
     if (jsonMatch) {
@@ -192,17 +171,7 @@ Format as JSON:
 }`;
 
   try {
-    const payload = prepareClaudePayload(prompt);
-    const command = new InvokeModelCommand({
-      modelId: BEDROCK_MODEL_ID,
-      contentType: "application/json",
-      accept: "application/json",
-      body: payload,
-    });
-
-    const result = await bedrockClient.send(command);
-    const responseBody = JSON.parse(new TextDecoder().decode(result.body));
-    const text = responseBody.content[0].text;
+    const text = await invokeClaude("You are a medical AI assistant generating treatment plans. Return JSON.", prompt);
     const jsonMatch = text.match(/\{[\s\S]*\}/);
 
     if (jsonMatch) {
@@ -264,17 +233,7 @@ Format as JSON:
 }`;
 
   try {
-    const payload = prepareClaudePayload(prompt);
-    const command = new InvokeModelCommand({
-      modelId: BEDROCK_MODEL_ID,
-      contentType: "application/json",
-      accept: "application/json",
-      body: payload,
-    });
-
-    const result = await bedrockClient.send(command);
-    const responseBody = JSON.parse(new TextDecoder().decode(result.body));
-    const text = responseBody.content[0].text;
+    const text = await invokeClaude("You are an AI assistant for rural health workers. Return JSON.", prompt);
     const jsonMatch = text.match(/\{[\s\S]*\}/);
 
     if (jsonMatch) {
@@ -328,17 +287,8 @@ Include:
 Use simple, clear language that patients can understand.`;
 
   try {
-    const payload = prepareClaudePayload(prompt);
-    const command = new InvokeModelCommand({
-      modelId: BEDROCK_MODEL_ID,
-      contentType: "application/json",
-      accept: "application/json",
-      body: payload,
-    });
-
-    const result = await bedrockClient.send(command);
-    const responseBody = JSON.parse(new TextDecoder().decode(result.body));
-    return responseBody.content[0].text;
+    const text = await invokeClaude("You are a medical AI assistant that writes discharge summaries.", prompt);
+    return text;
   } catch (error) {
     console.error("Error generating discharge summary:", error);
     return "Unable to generate discharge summary. Please consult with your healthcare provider.";

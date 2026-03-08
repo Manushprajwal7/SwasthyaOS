@@ -4,8 +4,6 @@ import React, { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { IndiaMap } from "./india-map";
-import { SyndromeFilter } from "./syndrome-filter";
-import { TimeSlider } from "./time-slider";
 import { AlertsPanel } from "./alerts-panel";
 import { SituationReport } from "./situation-report";
 import { AWSBadge } from "@/components/ui/aws-badge";

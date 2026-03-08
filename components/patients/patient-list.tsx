@@ -55,7 +55,12 @@ export function PatientList({
           </p>
         ) : (
           patients.map((patient) => {
-            const config = statusConfig[patient.status];
+            const config = statusConfig[patient.status] || { 
+              color: 'text-muted-foreground', 
+              bg: 'bg-slate-100', 
+              icon: AlertCircle, 
+              label: patient.status || 'Unknown' 
+            };
             const isSelected = selectedPatientId === patient.id;
 
             return (

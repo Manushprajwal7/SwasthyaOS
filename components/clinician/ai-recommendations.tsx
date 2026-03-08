@@ -5,6 +5,7 @@ import { Lightbulb, Check, X, Edit } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from '@/contexts/language-context';
 
 interface AIRecommendationsProps {
   soapData: {
@@ -26,6 +27,7 @@ interface Recommendation {
 
 export function AIRecommendations({ soapData }: AIRecommendationsProps) {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [dismissedRecs, setDismissedRecs] = useState<string[]>([]);
   const hasContent = Object.values(soapData).some((v) => v.length > 0);
 
@@ -60,9 +62,9 @@ export function AIRecommendations({ soapData }: AIRecommendationsProps) {
     : [];
 
   const typeConfig = {
-    diagnosis: { icon: '🔍', label: 'Diagnosis', color: 'bg-secondary/10' },
-    medication: { icon: '💊', label: 'Medication', color: 'bg-primary/10' },
-    referral: { icon: '→', label: 'Referral', color: 'bg-accent/10' },
+    diagnosis: { icon: '🔍', label: t("clinician.recs.diagnosis"), color: 'bg-secondary/10' },
+    medication: { icon: '💊', label: t("clinician.recs.medication"), color: 'bg-primary/10' },
+    referral: { icon: '→', label: t("clinician.recs.referral"), color: 'bg-accent/10' },
   };
 
   return (
@@ -70,14 +72,14 @@ export function AIRecommendations({ soapData }: AIRecommendationsProps) {
       <div className="flex items-center justify-between">
         <h4 className="font-semibold text-foreground flex items-center gap-2">
           <Lightbulb className="h-5 w-5 text-accent" />
-          AI Recommendations
+          {t("clinician.recs.title")}
         </h4>
       </div>
 
       {!hasContent && (
         <Card className="p-6 text-center">
           <p className="text-sm text-muted-foreground">
-            Fill SOAP note sections to receive AI-powered recommendations
+            {t("clinician.recs.empty")}
           </p>
         </Card>
       )}
@@ -85,7 +87,7 @@ export function AIRecommendations({ soapData }: AIRecommendationsProps) {
       {hasContent && recommendations.filter(r => !dismissedRecs.includes(r.id)).length === 0 && (
         <Card className="p-6 text-center">
           <p className="text-sm text-muted-foreground">
-            No recommendations available at this time
+            {t("clinician.recs.none")}
           </p>
         </Card>
       )}
@@ -111,8 +113,8 @@ export function AIRecommendations({ soapData }: AIRecommendationsProps) {
               {/* Confidence & Ref Row */}
               <div className="flex items-center justify-between gap-4 pt-1">
                 <div className="flex items-center gap-2 flex-1">
-                  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                    Score
+                   <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                    {t("clinician.recs.score")}
                   </span>
                   <div className="flex-1 h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden max-w-[80px]">
                     <div
@@ -141,8 +143,8 @@ export function AIRecommendations({ soapData }: AIRecommendationsProps) {
                     toast({ title: "Recommendation Accepted", description: `${rec.title} added to plan.` });
                   }}
                 >
-                  <Check className="h-3.5 w-3.5 mr-1" />
-                  Accept
+                   <Check className="h-3.5 w-3.5 mr-1" />
+                  {t("clinician.recs.accept")}
                 </Button>
                 <Button 
                   size="sm" 
@@ -170,9 +172,9 @@ export function AIRecommendations({ soapData }: AIRecommendationsProps) {
       })}
 
       {/* Disclaimer */}
-      <Card className="bg-primary/5 p-3 border-primary/20">
+       <Card className="bg-primary/5 p-3 border-primary/20">
         <p className="text-xs text-primary font-medium leading-relaxed">
-          <strong>Clinical Disclaimer:</strong> All AI recommendations are assistive only. Final clinical decisions rest solely with the treating physician. Cross-reference with current clinical guidelines.
+          {t("clinician.recs.disclaimer")}
         </p>
       </Card>
     </div>

@@ -3,6 +3,8 @@
 import React from 'react';
 import { AlertTriangle, TrendingUp } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 interface AlertsPanelProps {
   syndrome: string;
@@ -20,6 +22,7 @@ interface Alert {
 }
 
 export function AlertsPanel({ syndrome, timeRange }: AlertsPanelProps) {
+  const { toast } = useToast();
   const alerts: Alert[] = [
     {
       id: '1',
@@ -110,6 +113,32 @@ export function AlertsPanel({ syndrome, timeRange }: AlertsPanelProps) {
                       {alert.confidence}%
                     </span>
                   </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-2 mt-4 pt-3 border-t border-border/50">
+                  <Button 
+                    variant="default" 
+                    size="sm" 
+                    className="flex-1 h-7 text-[10px] uppercase font-bold tracking-wider bg-indigo-600 hover:bg-indigo-700"
+                    onClick={() => toast({
+                      title: "Investigation Logged",
+                      description: `Rapid Response Team notified for ${alert.district}. Case file #${alert.id} opened.`,
+                    })}
+                  >
+                    Investigate
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1 h-7 text-[10px] uppercase font-bold tracking-wider"
+                    onClick={() => toast({
+                      title: "Alert Dismissed",
+                      description: `Anomaly in ${alert.district} marked as non-critical.`,
+                    })}
+                  >
+                    Dismiss
+                  </Button>
                 </div>
               </div>
             </div>

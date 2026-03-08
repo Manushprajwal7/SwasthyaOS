@@ -1,5 +1,4 @@
-import { InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
-import { bedrockClient, BEDROCK_MODEL_ID, prepareClaudePayload } from "./bedrock-client";
+import { invokeClaude } from "./bedrock-client";
 
 export interface ChatMessage {
   role: "user" | "assistant";
@@ -54,17 +53,7 @@ IMPORTANT:
 Keep responses concise and professional.`;
 
   try {
-    const payload = prepareClaudePayload(prompt);
-    const command = new InvokeModelCommand({
-      modelId: BEDROCK_MODEL_ID,
-      contentType: "application/json",
-      accept: "application/json",
-      body: payload,
-    });
-
-    const result = await bedrockClient.send(command);
-    const responseBody = JSON.parse(new TextDecoder().decode(result.body));
-    const response = responseBody.content[0].text;
+    const response = await invokeClaude("You are a medical consultation chat assistant.", prompt);
 
     return {
       message: response,
@@ -114,17 +103,7 @@ Format as JSON:
 }`;
 
   try {
-    const payload = prepareClaudePayload(prompt);
-    const command = new InvokeModelCommand({
-      modelId: BEDROCK_MODEL_ID,
-      contentType: "application/json",
-      accept: "application/json",
-      body: payload,
-    });
-
-    const result = await bedrockClient.send(command);
-    const responseBody = JSON.parse(new TextDecoder().decode(result.body));
-    const text = responseBody.content[0].text;
+    const text = await invokeClaude("You are an AI generating medical SOAP notes. Return JSON.", prompt);
     const jsonMatch = text.match(/\{[\s\S]*\}/);
 
     if (jsonMatch) {

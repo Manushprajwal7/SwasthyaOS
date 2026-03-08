@@ -2,70 +2,27 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { FileText } from 'lucide-react';
 
-export function InventoryHistory() {
-  const history = [
-    {
-      id: 1,
-      date: 'Dec 15, 2024 - 2:30 PM',
-      action: 'Stock In',
-      medication: 'Paracetamol 500mg',
-      quantity: '+200 units',
-      reference: 'PO-2024-001',
-      user: 'Admin User',
-      status: 'completed',
-    },
-    {
-      id: 2,
-      date: 'Dec 15, 2024 - 10:15 AM',
-      action: 'Stock Out',
-      medication: 'Amoxicillin 250mg',
-      quantity: '-50 units',
-      reference: 'CONS-2024-0847',
-      user: 'Dr. Rajesh Kumar',
-      status: 'completed',
-    },
-    {
-      id: 3,
-      date: 'Dec 14, 2024 - 4:45 PM',
-      action: 'Expiry Mark',
-      medication: 'Aspirin 100mg',
-      quantity: '-30 units',
-      reference: 'EXP-2024-012',
-      user: 'Pharmacy Tech',
-      status: 'completed',
-    },
-    {
-      id: 4,
-      date: 'Dec 14, 2024 - 1:20 PM',
-      action: 'Adjustment',
-      medication: 'Metformin 500mg',
-      quantity: '+5 units',
-      reference: 'ADJ-2024-0156',
-      user: 'Inventory Manager',
-      status: 'completed',
-    },
-    {
-      id: 5,
-      date: 'Dec 13, 2024 - 9:30 AM',
-      action: 'Stock In',
-      medication: 'Lisinopril 10mg',
-      quantity: '+150 units',
-      reference: 'PO-2024-000',
-      user: 'Admin User',
-      status: 'completed',
-    },
-    {
-      id: 6,
-      date: 'Dec 12, 2024 - 3:15 PM',
-      action: 'Stock Out',
-      medication: 'Omeprazole 20mg',
-      quantity: '-35 units',
-      reference: 'CONS-2024-0823',
-      user: 'Dr. Priya Sharma',
-      status: 'completed',
-    },
-  ];
+interface HistoryEntry {
+  id: number;
+  date: string;
+  action: string;
+  medication: string;
+  quantity: string;
+  reference: string;
+  user: string;
+  status: string;
+}
+
+interface InventoryHistoryProps {
+  history: HistoryEntry[];
+}
+
+export function InventoryHistory({ history }: InventoryHistoryProps) {
+  const { toast } = useToast();
 
   const actionColors = {
     'Stock In': 'bg-success/10 text-success',
@@ -150,11 +107,23 @@ export function InventoryHistory() {
                   </div>
                 </div>
 
-                {/* Status Badge */}
-                <div className="text-right">
+                {/* Status & Actions */}
+                <div className="text-right flex flex-col items-end gap-2">
                   <span className="rounded-full bg-success/10 px-2 py-0.5 text-xs font-medium text-success">
                     {entry.status.charAt(0).toUpperCase() + entry.status.slice(1)}
                   </span>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-7 text-[10px] uppercase font-bold text-muted-foreground hover:text-indigo-600 px-2"
+                    onClick={() => toast({
+                      title: "Transaction Details",
+                      description: `Entry ID: ${entry.id} | Ref: ${entry.reference} | Ledger verified by ${entry.user}. Transaction confirmed via SupplyChain model.`,
+                    })}
+                  >
+                    <FileText className="h-3 w-3 mr-1" />
+                    Details
+                  </Button>
                 </div>
               </div>
             ))}

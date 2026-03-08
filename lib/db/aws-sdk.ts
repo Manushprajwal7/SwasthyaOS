@@ -27,6 +27,9 @@ export const TABLES = {
   APPOINTMENTS: process.env.DYNAMODB_TABLE_APPOINTMENTS || "Swasthya_Appointments",
   ALERTS: process.env.DYNAMODB_TABLE_ALERTS || "Swasthya_Alerts",
   AUDIT_LOGS: process.env.DYNAMODB_TABLE_AUDIT_LOGS || "Swasthya_AuditLogs",
+  AI_EVENTS: process.env.DYNAMODB_TABLE_AI_EVENTS || "Swasthya_AIEvents",
+  METRICS: process.env.DYNAMODB_TABLE_METRICS || "Swasthya_Metrics",
+  PATIENT_HISTORY: process.env.DYNAMODB_TABLE_PATIENT_HISTORY || "Swasthya_PatientHistory",
 };
 
 // S3 Bucket Names

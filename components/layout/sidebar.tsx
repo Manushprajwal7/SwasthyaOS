@@ -14,10 +14,10 @@ import {
   Calendar,
   Package,
   Bell,
-  MessageSquare,
   ChevronLeft,
   ChevronRight,
   Activity,
+  Ambulance,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/language-context";
@@ -44,6 +44,13 @@ export function Sidebar({
       label: t("nav.dashboard"),
       icon: LayoutDashboard,
       href: "/",
+      roles: ["doctor", "frontline", "admin"] as UserRole[],
+    },
+    {
+      id: "ambulance_automation",
+      label: t("nav.ambulance_automation"),
+      icon: Ambulance,
+      href: "/ambulance-automation",
       roles: ["doctor", "frontline", "admin"] as UserRole[],
     },
     {
@@ -96,13 +103,6 @@ export function Sidebar({
       roles: ["doctor", "frontline", "admin"] as UserRole[],
     },
     {
-      id: "chat",
-      label: t("nav.chat"),
-      icon: MessageSquare,
-      href: "/chat",
-      roles: ["doctor", "frontline", "admin"] as UserRole[],
-    },
-    {
       id: "reports",
       label: t("nav.reports"),
       icon: FileText,
@@ -146,7 +146,7 @@ export function Sidebar({
         {isOpen ? (
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-slate-900">SwasthyaOS</h1>
+              <h1 className="text-xl font-bold text-slate-900">{t("system.name")}</h1>
               {/* EKG Line Animation */}
               <svg className="h-4 w-12 text-teal-600" viewBox="0 0 48 16">
                 <path
@@ -158,7 +158,7 @@ export function Sidebar({
                 />
               </svg>
             </div>
-            <p className="text-xs text-slate-500 mt-1">v2.1.0 · ap-south-1</p>
+            <p className="text-xs text-slate-500 mt-1">{t("system.version")} · {t("system.region")}</p>
           </div>
         ) : (
           <span className="text-xl font-bold text-teal-600">S</span>
@@ -166,7 +166,7 @@ export function Sidebar({
         <button
           onClick={onToggle}
           className="rounded-lg p-1.5 hover:bg-slate-200 text-slate-500 hover:text-slate-700 transition-colors"
-          aria-label={isOpen ? "Collapse sidebar" : "Expand sidebar"}
+          aria-label={isOpen ? t("system.collapse") : t("system.expand")}
         >
           {isOpen ? (
             <ChevronLeft className="h-5 w-5" />
@@ -213,10 +213,10 @@ export function Sidebar({
             {/* System Status */}
             <div className="flex items-center gap-2 text-xs">
               <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-slate-600">All Systems Operational</span>
+              <span className="text-slate-600">{t("system.all.operational")}</span>
             </div>
             <div className="text-xs text-slate-500">
-              <p>SwasthyaOS Healthcare Platform</p>
+              <p>{t("system.platform.name")}</p>
             </div>
           </div>
         ) : (

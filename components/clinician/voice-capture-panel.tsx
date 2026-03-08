@@ -5,6 +5,8 @@ import { Mic, Square, Volume2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
+import { useLanguage } from '@/contexts/language-context';
+
 interface VoiceCapturePanelProps {
   isRecording: boolean;
   onToggleRecording: () => void;
@@ -18,6 +20,7 @@ export function VoiceCapturePanel({
   transcribedText,
   onTranscriptionUpdate,
 }: VoiceCapturePanelProps) {
+  const { t } = useLanguage();
   const [recordingTime, setRecordingTime] = useState(0);
 
   useEffect(() => {
@@ -40,7 +43,7 @@ export function VoiceCapturePanel({
 
   return (
     <Card className={`p-6 ${isRecording ? 'ring-2 ring-accent' : ''}`}>
-      <h4 className="font-semibold text-foreground mb-4">Voice Capture</h4>
+      <h4 className="font-semibold text-foreground mb-4">{t("clinician.voice_capture.title")}</h4>
 
       {/* Recording Button */}
       <div className="flex items-center justify-center gap-4 mb-6">
@@ -65,7 +68,7 @@ export function VoiceCapturePanel({
               <div className="flex items-center gap-2 justify-center mb-1">
                 <div className="h-2 w-2 rounded-full bg-error animate-pulse" />
                 <span className="text-sm font-semibold text-error">
-                  Recording...
+                  {t("clinician.voice_capture.recording")}
                 </span>
               </div>
               <p className="text-2xl font-bold font-mono text-foreground">
@@ -75,7 +78,7 @@ export function VoiceCapturePanel({
           )}
           {!isRecording && transcribedText && (
             <p className="text-xs text-muted-foreground">
-              Click to continue recording
+              {t("clinician.voice_capture.continue")}
             </p>
           )}
         </div>
@@ -90,7 +93,7 @@ export function VoiceCapturePanel({
 
       {/* Info */}
       <p className="mt-4 text-xs text-muted-foreground text-center">
-        Speech-to-text powered by AI. Click record to begin.
+        {t("clinician.voice_capture.info")}
       </p>
     </Card>
   );

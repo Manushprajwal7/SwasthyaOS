@@ -61,7 +61,7 @@ export function DashboardContent() {
           : p.triage === "urgent"
           ? ("amber" as const)
           : ("green" as const),
-      status: p.status,
+      status: p.status as "waiting" | "in-consultation" | "completed",
       uhid: p.uhid,
     }));
   }, [patients]);
@@ -76,7 +76,7 @@ export function DashboardContent() {
           : event.type === "insight"
           ? ("medium" as const)
           : ("info" as const),
-      time: event.timestamp.toLocaleTimeString("en-IN", {
+      time: new Date(event.timestamp).toLocaleTimeString("en-IN", {
         hour: "2-digit",
         minute: "2-digit",
       }),
@@ -96,10 +96,10 @@ export function DashboardContent() {
   const now = new Date();
   const greeting =
     now.getHours() < 12
-      ? "Good Morning"
+      ? t("dashboard.greeting.morning")
       : now.getHours() < 17
-      ? "Good Afternoon"
-      : "Good Evening";
+      ? t("dashboard.greeting.afternoon")
+      : t("dashboard.greeting.evening");
   const dateStr = now.toLocaleDateString("en-IN", {
     weekday: "long",
     year: "numeric",
@@ -113,7 +113,7 @@ export function DashboardContent() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in-up">
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold text-foreground font-heading" suppressHydrationWarning>
-            {greeting}, Dr. Kumar 👋
+            {greeting}, {t("dashboard.dr.kumar")} 
           </h1>
           <p className="mt-1 text-sm text-muted-foreground flex items-center gap-2" suppressHydrationWarning>
             <Calendar className="h-3.5 w-3.5" />
@@ -129,7 +129,7 @@ export function DashboardContent() {
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-2 text-xs text-muted-foreground bg-emerald-50 dark:bg-emerald-950/30 px-3 py-1.5 rounded-full border border-emerald-200 dark:border-emerald-800">
             <LivePulse active color="green" size="sm" />
-            <span>Real-time sync</span>
+            <span>{t("dashboard.sync.realtime")}</span>
           </div>
           <AWSBadge service="HealthLake" model="FHIR R4" status="active" />
         </div>
@@ -164,7 +164,7 @@ export function DashboardContent() {
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base font-semibold text-foreground">
-                Model Performance (30d)
+                {t("dashboard.performance.title")}
               </h3>
             </div>
             {/* Stacked Bar */}
@@ -172,35 +172,35 @@ export function DashboardContent() {
               <div className="h-8 rounded-full overflow-hidden flex bg-slate-100 dark:bg-slate-800">
                 <div
                   className="bg-teal-500 h-full transition-all duration-500 rounded-l-full"
-                  style={{ width: `${Math.round(metrics.acceptanceRate * 0.76)}%` }}
+                  style={{ width: `${Math.round(metrics.acceptanceRate)}%` }}
                 />
                 <div
                   className="bg-amber-400 h-full transition-all duration-500"
-                  style={{ width: "22%" }}
+                  style={{ width: `${metrics.pendingRate ?? 15}%` }}
                 />
                 <div
                   className="bg-red-400 h-full transition-all duration-500 rounded-r-full"
                   style={{
-                    width: `${100 - Math.round(metrics.acceptanceRate * 0.76) - 22}%`,
+                    width: `${Math.round(metrics.rejectionRate ?? (100 - metrics.acceptanceRate - 15))}%`,
                   }}
                 />
               </div>
               <div className="flex justify-between text-[11px] sm:text-xs">
                 <span className="text-teal-600 font-medium">
-                  ✓ {Math.round(metrics.acceptanceRate * 0.76)}%
+                  ✓ {Math.round(metrics.acceptanceRate)}%
                 </span>
                 <span className="text-amber-600 font-medium">
-                  ✎ 22%
+                  ✎ {metrics.pendingRate ?? 15}%
                 </span>
                 <span className="text-red-500 font-medium">
-                  ✕ {100 - Math.round(metrics.acceptanceRate * 0.76) - 22}%
+                  ✕ {Math.round(metrics.rejectionRate ?? (100 - metrics.acceptanceRate - 15))}%
                 </span>
               </div>
             </div>
             <div className="mt-4 pt-4 border-t dark:border-slate-700 flex items-center justify-between">
-              <span className="text-xs text-muted-foreground mr-1">Drift index:</span>
+              <span className="text-xs text-muted-foreground mr-1">{t("dashboard.drift.index")}:</span>
               <span className="text-xs font-mono font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-1.5 py-0.5 rounded">
-                0.031 ✓
+                {(metrics.driftIndex ?? 0.031).toFixed(3)} ✓
               </span>
             </div>
             <div className="mt-4 w-full flex justify-end">
@@ -222,8 +222,7 @@ export function DashboardContent() {
                 </div>
                 <div>
                   <p className="font-semibold text-red-800 dark:text-red-200 text-sm">
-                    {criticalAlertCount} Critical Alert
-                    {criticalAlertCount > 1 ? "s" : ""}
+                    {criticalAlertCount} {criticalAlertCount > 1 ? t("dashboard.alert.critical_plural") : t("dashboard.alert.critical")}
                   </p>
                   <p className="text-xs text-red-600 dark:text-red-300 line-clamp-1">
                     {alerts.find((a) => a.severity === "critical" && !a.acknowledged)?.title}
@@ -239,7 +238,7 @@ export function DashboardContent() {
                   if (alert) acknowledgeAlert(alert.id);
                 }}
               >
-                Acknowledge
+                {t("dashboard.alert.acknowledge")}
               </Button>
             </div>
           )}
@@ -279,7 +278,7 @@ export function DashboardContent() {
             <div className="flex flex-col mb-4 space-y-2">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-semibold text-foreground">
-                  Signals
+                  {t("dashboard.signals.title")}
                 </h3>
                 <AWSBadge service="Kinesis" model="SageMaker" />
               </div>

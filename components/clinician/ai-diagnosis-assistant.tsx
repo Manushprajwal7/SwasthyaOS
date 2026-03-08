@@ -76,7 +76,7 @@ export function AIDiagnosisAssistant() {
             AI Diagnosis Assistant
           </h3>
           <p className="text-sm text-muted-foreground">
-            Powered by Gemini AI - Clinical Decision Support
+            Powered by Amazon Bedrock - Clinical Decision Support
           </p>
         </div>
       </div>

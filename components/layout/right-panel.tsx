@@ -235,7 +235,7 @@ export function RightPanel({
       <div className="p-4 border-t border-border">
         <div className="text-xs text-muted-foreground text-center">
           <p className="font-medium">SwasthyaOS AI Engine v2.1.4</p>
-          <p className="mt-1">Powered by Gemini AI</p>
+          <p className="mt-1">Powered by Amazon Bedrock</p>
           <p className="mt-1 text-[10px]">
             Last updated: {new Date().toLocaleTimeString()}
           </p>

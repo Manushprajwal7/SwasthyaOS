@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, AlertCircle, Shield } from 'lucide-react';
@@ -10,6 +10,67 @@ interface ComplianceReportsProps {
 }
 
 export function ComplianceReports({ dateRange }: ComplianceReportsProps) {
+  const [downloadingReport, setDownloadingReport] = useState<string | null>(null);
+
+  const handleDownloadSecurityReport = async () => {
+    setDownloadingReport('security');
+    try {
+      console.log('Downloading Security Report...');
+      // Simulate API call for downloading security report
+      const response = await fetch('/api/reports/compliance/security', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dateRange })
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `security-report-${dateRange.start}-to-${dateRange.end}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        console.log('Security report downloaded');
+      }
+    } catch (error) {
+      console.error('Download failed:', error);
+    } finally {
+      setDownloadingReport(null);
+    }
+  };
+
+  const handleViewAuditTrail = async () => {
+    setDownloadingReport('audit');
+    try {
+      console.log('Viewing Detailed Audit Trail...');
+      // Simulate API call for getting audit trail
+      const response = await fetch('/api/reports/compliance/audit-trail', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dateRange })
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `audit-trail-${dateRange.start}-to-${dateRange.end}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        console.log('Audit trail downloaded');
+      }
+    } catch (error) {
+      console.error('Audit trail download failed:', error);
+    } finally {
+      setDownloadingReport(null);
+    }
+  };
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">Compliance & Regulatory Reports</h2>
@@ -94,8 +155,13 @@ export function ComplianceReports({ dateRange }: ComplianceReportsProps) {
               </div>
             </div>
 
-            <Button variant="outline" className="w-full mt-4 bg-transparent">
-              Download Security Report
+            <Button 
+              variant="outline" 
+              className="w-full mt-4 bg-transparent"
+              onClick={handleDownloadSecurityReport}
+              disabled={downloadingReport === 'security'}
+            >
+              {downloadingReport === 'security' ? 'Downloading...' : 'Download Security Report'}
             </Button>
           </CardContent>
         </Card>
@@ -121,8 +187,13 @@ export function ComplianceReports({ dateRange }: ComplianceReportsProps) {
               </div>
             ))}
 
-            <Button variant="outline" className="w-full mt-4 bg-transparent">
-              View Detailed Audit Trail
+            <Button 
+              variant="outline" 
+              className="w-full mt-4 bg-transparent"
+              onClick={handleViewAuditTrail}
+              disabled={downloadingReport === 'audit'}
+            >
+              {downloadingReport === 'audit' ? 'Loading...' : 'View Detailed Audit Trail'}
             </Button>
           </CardContent>
         </Card>

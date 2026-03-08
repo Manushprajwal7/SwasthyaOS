@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FileText, Download, AlertCircle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,12 @@ export function SituationReport({
   selectedDistrict,
 }: SituationReportProps) {
   const { toast } = useToast();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const syndromeLabels: Record<string, string> = {
     all: 'All Syndromes',
     fever: 'Fever',
@@ -29,7 +35,7 @@ export function SituationReport({
 
   const reportContent = `
 SITUATION REPORT - ${syndromeLabels[syndrome]}
-Generated: ${new Date().toLocaleString()}
+Generated: ${mounted ? new Date().toLocaleString() : 'Loading...'}
 Time Period: Last ${timeRange} hours
 
 EXECUTIVE SUMMARY:
@@ -116,7 +122,7 @@ NEXT STEPS:
               Generated
             </p>
             <p className="text-xs font-semibold text-foreground">
-              {new Date().toLocaleDateString()}
+              {mounted ? new Date().toLocaleDateString() : '...'}
             </p>
           </div>
         </div>

@@ -1,41 +1,64 @@
-import { BedrockRuntimeClient } from "@aws-sdk/client-bedrock-runtime";
+import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
 
-// Initialize Bedrock Runtime client
 const region = process.env.AWS_REGION || "ap-south-1";
+
+// Create credentials object safely
+const getCredentials = () => {
+  if (process.env.Access_Key_ID && process.env.Secret_Access_Key) {
+    return {
+      accessKeyId: process.env.Access_Key_ID,
+      secretAccessKey: process.env.Secret_Access_Key,
+    };
+  }
+  return undefined; // Let AWS SDK fallback to other credential providers
+};
 
 export const bedrockClient = new BedrockRuntimeClient({
   region,
-  credentials: {
-    accessKeyId: process.env.Access_Key_ID || "",
-    secretAccessKey: process.env.Secret_Access_Key || "",
-  },
+  ...(getCredentials() && { credentials: getCredentials() }),
 });
 
-// Model ID for Claude 3 Sonnet
-export const BEDROCK_MODEL_ID = "anthropic.claude-3-sonnet-20240229-v1:0";
-
-// Standard configuration for clinical AI agents
-export const bedrockConfig = {
-  anthropic_version: "bedrock-2023-05-31",
-  max_tokens: 4096,
-  temperature: 0.1, // Deterministic for medical safety
-  top_p: 0.9,
-};
+export const BEDROCK_MODEL_ID = process.env.BEDROCK_MODEL_ID || "anthropic.claude-3-sonnet-20240229-v1:0";
 
 /**
- * Helper to prepare common Bedrock payload for Claude 3
+ * Helper to invoke Claude 3 via Amazon Bedrock
+ * @param systemPrompt The system instructions
+ * @param userPrompt The user prompt
+ * @param temperature Temperature for generation (default: 0.2)
+ * @returns The generated text
  */
-export function prepareClaudePayload(prompt: string, systemPrompt?: string) {
-  const messages = [
-    {
-      role: "user",
-      content: [{ type: "text", text: prompt }],
-    },
-  ];
-
-  return JSON.stringify({
-    ...bedrockConfig,
+export async function invokeClaude(systemPrompt: string, userPrompt: string, temperature = 0.2): Promise<string> {
+  const payload = {
+    anthropic_version: "bedrock-2023-05-31",
+    max_tokens: 2000,
+    temperature: temperature,
     system: systemPrompt,
-    messages,
+    messages: [
+      {
+        role: "user",
+        content: [{ type: "text", text: userPrompt }],
+      },
+    ],
+  };
+
+  const command = new InvokeModelCommand({
+    contentType: "application/json",
+    accept: "application/json",
+    modelId: BEDROCK_MODEL_ID,
+    body: JSON.stringify(payload),
   });
+
+  try {
+    const response = await bedrockClient.send(command);
+    const responseBody = JSON.parse(new TextDecoder().decode(response.body));
+
+    if (responseBody.content && responseBody.content.length > 0) {
+      return responseBody.content[0].text;
+    }
+
+    throw new Error("Invalid response format from Bedrock");
+  } catch (error) {
+    console.error("Bedrock invocation failed:", error);
+    throw error;
+  }
 }

@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { AWSBadge } from "@/components/ui/aws-badge";
 import { ConfidenceRing } from "@/components/ui/confidence-ring";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/language-context";
 
 interface Medication {
   id: string;
@@ -69,6 +70,7 @@ const drugSuggestions = [
 
 export function RxManager() {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [medications, setMedications] = useState<Medication[]>(mockMedications);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -103,16 +105,16 @@ export function RxManager() {
   };
 
   const interactionConfig = {
-    clear: { icon: CheckCircle, color: "text-green-600", label: "✅ Clear" },
+    clear: { icon: CheckCircle, color: "text-green-600", label: `✅ ${t("common.good")}` },
     monitor: {
       icon: AlertTriangle,
       color: "text-amber-600",
-      label: "⚠️ Monitor",
+      label: `⚠️ ${t("common.fair")}`,
     },
     warning: {
       icon: AlertTriangle,
       color: "text-red-600",
-      label: "❌ Warning",
+      label: `❌ ${t("common.poor")}`,
     },
   };
 
@@ -121,9 +123,9 @@ export function RxManager() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-foreground">Rx Manager</h3>
+          <h3 className="text-lg font-semibold text-foreground">{t("clinician.rx.title")}</h3>
           <p className="text-sm text-muted-foreground">
-            Prescription builder with drug interaction checking
+            {t("clinician.rx.subtitle")}
           </p>
         </div>
         <AWSBadge service="Amazon Comprehend Medical" />
@@ -138,7 +140,7 @@ export function RxManager() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Search drug name..."
+                placeholder={t("clinician.rx.search")}
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -173,32 +175,32 @@ export function RxManager() {
           {/* Active Prescriptions Table */}
           <Card className="p-4">
             <h4 className="font-semibold text-foreground mb-4">
-              Active Prescriptions
+              {t("clinician.rx.active")}
             </h4>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-200">
                     <th className="text-left py-2 text-muted-foreground font-medium">
-                      Drug
+                      {t("clinician.rx.drug")}
                     </th>
                     <th className="text-left py-2 text-muted-foreground font-medium">
-                      Dose
+                      {t("clinician.rx.dose")}
                     </th>
                     <th className="text-left py-2 text-muted-foreground font-medium">
-                      Frequency
+                      {t("clinician.rx.frequency")}
                     </th>
                     <th className="text-left py-2 text-muted-foreground font-medium">
-                      Duration
+                      {t("clinician.rx.duration")}
                     </th>
                     <th className="text-left py-2 text-muted-foreground font-medium">
-                      Route
+                      {t("clinician.rx.route")}
                     </th>
                     <th className="text-left py-2 text-muted-foreground font-medium">
-                      Interaction
+                      {t("clinician.rx.interaction")}
                     </th>
                     <th className="text-left py-2 text-muted-foreground font-medium">
-                      PMJAY
+                      {t("clinician.rx.pmjay")}
                     </th>
                     <th className="py-2"></th>
                   </tr>
@@ -229,9 +231,9 @@ export function RxManager() {
                         </td>
                         <td className="py-3">
                           {med.pmjayCovered ? (
-                            <span className="text-green-600">✅ Covered</span>
+                            <span className="text-green-600">✅ {t("clinician.rx.covered")}</span>
                           ) : (
-                            <span className="text-red-600">❌ Not covered</span>
+                            <span className="text-red-600">❌ {t("clinician.rx.not_covered")}</span>
                           )}
                         </td>
                         <td className="py-3">
@@ -254,29 +256,28 @@ export function RxManager() {
               <div className="flex items-start gap-2">
                 <Info className="h-4 w-4 text-blue-600 mt-0.5" />
                 <p className="text-xs text-blue-700">
-                  Generic substitutes are available for Amoxicillin-Clavulanate.
-                  Click on any drug to view alternatives.
+                  {t("clinician.rx.generic_notice")}
                 </p>
               </div>
             </div>
           </Card>
 
           {/* Action Buttons */}
-          <div className="flex gap-3">
+           <div className="flex gap-3">
             <Button className="flex-1" onClick={() => toast({ title: "Prescription Saved", description: "Rx has been signed and saved to patient record." })}>
               <CheckCircle className="h-4 w-4 mr-2" />
-              Save Prescription
+              {t("clinician.rx.save")}
             </Button>
-            <Button variant="outline" onClick={() => window.print()}>Print Rx</Button>
+            <Button variant="outline" onClick={() => window.print()}>{t("clinician.rx.print")}</Button>
           </div>
         </div>
 
         {/* Right: Drug Interaction Panel */}
         <div className="lg:col-span-4 space-y-4 min-w-0">
           <Card className="p-4">
-            <div className="flex items-center justify-between mb-4">
+             <div className="flex items-center justify-between mb-4">
               <h4 className="font-semibold text-foreground">
-                Drug Interaction Check
+                {t("clinician.rx.interaction_check")}
               </h4>
               <AWSBadge service="Comprehend Medical" />
             </div>
@@ -304,11 +305,11 @@ export function RxManager() {
               </div>
 
               {/* All Clear */}
-              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+               <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-600" />
                   <p className="text-sm font-medium text-green-800">
-                    No critical interactions detected
+                    {t("clinician.rx.no_interaction")}
                   </p>
                 </div>
               </div>
@@ -316,44 +317,44 @@ export function RxManager() {
           </Card>
 
           {/* PMJAY Formulary Status */}
-          <Card className="p-4">
+           <Card className="p-4">
             <h4 className="font-semibold text-foreground mb-3">
-              PMJAY Formulary Status
+              {t("clinician.rx.pmjay_status")}
             </h4>
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
+               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">
-                  Covered medications
+                  {t("clinician.rx.pmjay_covered_count")}
                 </span>
                 <span className="font-semibold text-green-600">3/3</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Total Rx value</span>
+                <span className="text-muted-foreground">{t("clinician.rx.total_value")}</span>
                 <span className="font-semibold text-foreground">₹245.00</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Patient pays</span>
+                <span className="text-muted-foreground">{t("clinician.rx.patient_pays")}</span>
                 <span className="font-semibold text-green-600">₹0.00</span>
               </div>
             </div>
           </Card>
 
           {/* Pediatric Dose Calculator Toggle */}
-          <Card className="p-4">
+           <Card className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-foreground">
-                  Pediatric Dose Calculator
+                  {t("clinician.rx.pediatric")}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Weight-based dosing
+                  {t("clinician.rx.weight_based")}
                 </p>
               </div>
               <button 
                 className="px-3 py-1.5 text-xs font-medium text-teal-600 border border-teal-200 rounded-lg hover:bg-teal-50"
                 onClick={() => toast({ title: "Calculator Enabled", description: "Pediatric dose calculator activated." })}
               >
-                Enable
+                {t("clinician.rx.enable")}
               </button>
             </div>
           </Card>

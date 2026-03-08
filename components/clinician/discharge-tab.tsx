@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button";
 import { AWSBadge } from "@/components/ui/aws-badge";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/language-context";
 
 export function DischargeTab() {
   const { toast } = useToast();
-  const [language, setLanguage] = useState("en");
+  const { t, language: appLanguage } = useLanguage();
+  const [language, setLanguage] = useState(appLanguage === "kn" ? "en" : appLanguage); // Default to app language, fallback to en if kn (as mock only has en/hi)
   const [showPatientVersion, setShowPatientVersion] = useState(false);
 
   const dischargeSummary = {
@@ -62,7 +64,7 @@ export function DischargeTab() {
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-foreground flex items-center gap-2">
           <FileText className="h-5 w-5 text-teal-600" />
-          Discharge Summary
+          {t("clinician.discharge.title")}
         </h3>
         <AWSBadge service="HealthLake" model="FHIR R4" status="active" />
       </div>
@@ -95,18 +97,18 @@ export function DischargeTab() {
           size="sm"
           onClick={() => setShowPatientVersion(!showPatientVersion)}
         >
-          {showPatientVersion ? "Doctor View" : "Patient Friendly"}
+          {showPatientVersion ? t("clinician.discharge.doctor_view") : t("clinician.discharge.patient_view")}
         </Button>
 
         {/* Actions */}
         <div className="ml-auto flex gap-2">
           <Button variant="outline" size="sm" onClick={() => window.print()}>
             <Print className="h-4 w-4 mr-1" />
-            Print
+            {t("common.print")}
           </Button>
           <Button variant="outline" size="sm" onClick={() => toast({ title: "Downloading PDF", description: "Generating discharge summary PDF..." })}>
             <Download className="h-4 w-4 mr-1" />
-            Download PDF
+            {t("clinician.discharge.download")}
           </Button>
         </div>
       </div>
@@ -125,7 +127,7 @@ export function DischargeTab() {
         <div className="grid grid-cols-2 gap-6 mb-8 pb-8 border-b border-border">
           <div>
             <p className="text-xs font-semibold text-muted-foreground">
-              PATIENT NAME
+              {t("common.name").toUpperCase()}
             </p>
             <p className="text-lg font-semibold text-foreground">
               {content.patientName}
@@ -145,13 +147,13 @@ export function DischargeTab() {
           </div>
           <div>
             <p className="text-xs font-semibold text-muted-foreground">
-              ADMISSION DATE
+              {t("clinician.discharge.adm_date")}
             </p>
             <p className="text-base text-foreground">{content.admissionDate}</p>
           </div>
           <div>
             <p className="text-xs font-semibold text-muted-foreground">
-              DISCHARGE DATE
+              {t("clinician.discharge.dis_date")}
             </p>
             <p className="text-base text-foreground">{content.dischargeDate}</p>
           </div>
@@ -162,7 +164,7 @@ export function DischargeTab() {
           {/* Diagnosis */}
           <div>
             <h3 className="text-sm font-bold text-primary mb-2">
-              PRIMARY DIAGNOSIS
+              {t("clinician.discharge.diagnosis_title")}
             </h3>
             <p className="text-foreground">{content.diagnosis}</p>
           </div>
@@ -170,7 +172,7 @@ export function DischargeTab() {
           {/* Summary */}
           <div>
             <h3 className="text-sm font-bold text-primary mb-2">
-              CLINICAL SUMMARY
+              {t("clinician.discharge.summary_title")}
             </h3>
             <p className="text-foreground leading-relaxed text-justify">
               {content.summary}
@@ -180,7 +182,7 @@ export function DischargeTab() {
           {/* Medications */}
           <div>
             <h3 className="text-sm font-bold text-primary mb-3">
-              DISCHARGE MEDICATIONS
+              {t("clinician.discharge.meds_title")}
             </h3>
             <div className="space-y-2 rounded-lg bg-muted/50 p-4">
               {content.medications.map((med, i) => (
@@ -197,7 +199,7 @@ export function DischargeTab() {
           {/* Follow-up */}
           <div>
             <h3 className="text-sm font-bold text-primary mb-2">
-              FOLLOW-UP INSTRUCTIONS
+              {t("clinician.discharge.followup_title")}
             </h3>
             <p className="text-foreground">{content.followUp}</p>
           </div>
@@ -205,33 +207,27 @@ export function DischargeTab() {
           {/* Restrictions */}
           <div>
             <h3 className="text-sm font-bold text-primary mb-2">
-              POST-DISCHARGE RESTRICTIONS
+              {t("clinician.discharge.restrictions_title")}
             </h3>
             <p className="text-foreground">{content.restrictions}</p>
           </div>
         </div>
 
         {/* Footer Disclaimer */}
-        <div className="mt-8 pt-8 border-t border-border">
+         <div className="mt-8 pt-8 border-t border-border">
           <p className="text-xs text-muted-foreground leading-relaxed">
-            This discharge summary has been generated using SwasthyaOS Clinical
-            Documentation System. Please ensure all information is accurate.
-            Patient should follow all prescribed medications and follow-up
-            appointments as recommended.
+            {t("clinician.discharge.footer")}
           </p>
         </div>
       </Card>
 
       {/* Legal Disclaimer */}
-      <Card className="bg-warning/5 border-warning/20 p-6">
+       <Card className="bg-warning/5 border-warning/20 p-6">
         <h4 className="font-semibold text-warning mb-2">
-          Legal & Medical Disclaimer
+          {t("clinician.discharge.legal_title")}
         </h4>
-        <p className="text-sm text-foreground leading-relaxed">
-          This document is a medical record and should be treated as
-          confidential. Any changes to this summary should be made only by
-          authorized clinical personnel. The patient must retain a copy for
-          their personal health records.
+         <p className="text-sm text-foreground leading-relaxed">
+          {t("clinician.discharge.legal_desc")}
         </p>
       </Card>
     </div>

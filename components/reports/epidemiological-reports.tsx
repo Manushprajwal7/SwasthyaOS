@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Download, TrendingUp, AlertCircle } from 'lucide-react';
@@ -10,6 +10,66 @@ interface EpidemiologicalReportsProps {
 }
 
 export function EpidemiologicalReports({ dateRange }: EpidemiologicalReportsProps) {
+  const [generatingReport, setGeneratingReport] = useState<number | null>(null);
+  const [exportingReport, setExportingReport] = useState<number | null>(null);
+
+  const handleGenerateReport = async (reportIndex: number, reportTitle: string) => {
+    setGeneratingReport(reportIndex);
+    try {
+      console.log(`Generating ${reportTitle}...`);
+      // Simulate API call for generating epidemiological report
+      const response = await fetch('/api/reports/epidemiological/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          reportTitle,
+          dateRange 
+        })
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Epidemiological report generated:', result);
+        // Could show a success notification here
+      }
+    } catch (error) {
+      console.error('Report generation failed:', error);
+    } finally {
+      setGeneratingReport(null);
+    }
+  };
+
+  const handleExportReport = async (reportIndex: number, reportTitle: string) => {
+    setExportingReport(reportIndex);
+    try {
+      console.log(`Exporting ${reportTitle}...`);
+      // Simulate API call for exporting epidemiological report
+      const response = await fetch('/api/reports/epidemiological/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          reportTitle,
+          dateRange 
+        })
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${reportTitle.toLowerCase().replace(/\s+/g, '-')}-${dateRange.start}-to-${dateRange.end}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }
+    } catch (error) {
+      console.error('Export failed:', error);
+    } finally {
+      setExportingReport(null);
+    }
+  };
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">Epidemiological Reports</h2>
@@ -107,11 +167,23 @@ export function EpidemiologicalReports({ dateRange }: EpidemiologicalReportsProp
                 ))}
               </div>
               <div className="flex gap-2">
-                <Button size="sm" className="flex-1 bg-primary hover:bg-primary-light">
-                  Generate
+                <Button 
+                  size="sm" 
+                  className="flex-1 bg-primary hover:bg-primary-light"
+                  onClick={() => handleGenerateReport(idx, report.title)}
+                  disabled={generatingReport === idx}
+                >
+                  {generatingReport === idx ? 'Generating...' : 'Generate'}
                 </Button>
-                <Button size="sm" variant="outline" className="flex-1 bg-transparent">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="flex-1 bg-transparent"
+                  onClick={() => handleExportReport(idx, report.title)}
+                  disabled={exportingReport === idx}
+                >
                   <Download className="h-4 w-4" />
+                  {exportingReport === idx ? 'Exporting...' : 'Export'}
                 </Button>
               </div>
             </CardContent>

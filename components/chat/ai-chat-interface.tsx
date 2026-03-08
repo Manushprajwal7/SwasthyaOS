@@ -101,7 +101,7 @@ export function AIChatInterface() {
               AI Medical Assistant
             </h3>
             <p className="text-xs text-muted-foreground">
-              Powered by Gemini AI
+              Powered by Amazon Bedrock
             </p>
           </div>
         </div>

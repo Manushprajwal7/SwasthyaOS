@@ -4,6 +4,7 @@ import React from "react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { MapPin, Users, AlertTriangle, ShieldCheck } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface PopulationKpiGridProps {
   metrics: {
@@ -16,6 +17,7 @@ interface PopulationKpiGridProps {
 }
 
 export function PopulationKpiGrid({ metrics, className }: PopulationKpiGridProps) {
+  const { toast } = useToast();
   const cards = [
     {
       title: "Active Districts",
@@ -61,9 +63,16 @@ export function PopulationKpiGrid({ metrics, className }: PopulationKpiGridProps
   return (
     <div className={cn("grid gap-4", className)}>
       {cards.map((card, i) => (
-        <Card
+        <button
           key={i}
-          className="p-5 hover-lift relative overflow-hidden group border-border bg-white dark:bg-slate-900"
+          onClick={() => toast({
+            title: `${card.title} Context`,
+            description: `${card.description}. Current value is ${card.value} with a ${card.trend} trend ${card.trendLabel}. Telemetry verified by AI Surveillance.`,
+          })}
+          className={cn(
+            "p-5 hover-lift relative overflow-hidden group border-border bg-white dark:bg-slate-900 rounded-xl text-left border-2 border-transparent hover:border-teal-400/50 shadow-sm transition-all w-full",
+            className
+          )}
         >
           {/* Subtle gradient background effect */}
           <div className="absolute inset-0 bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-900/50 -z-10" />
@@ -105,7 +114,7 @@ export function PopulationKpiGrid({ metrics, className }: PopulationKpiGridProps
               <card.icon className="h-5 w-5" />
             </div>
           </div>
-        </Card>
+        </button>
       ))}
     </div>
   );

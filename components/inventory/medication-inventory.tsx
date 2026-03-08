@@ -5,83 +5,28 @@ import { Button } from "@/components/ui/button";
 import { Edit2, ExternalLink, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+interface Medication {
+  id: number;
+  name: string;
+  batch: string;
+  quantity: number;
+  minStock: number;
+  maxStock: number;
+  expiryDate: string;
+  unitCost: string;
+  status: string;
+}
+
 interface MedicationInventoryProps {
   searchQuery: string;
+  medications: Medication[];
 }
 
 export function MedicationInventory({
   searchQuery,
+  medications,
 }: MedicationInventoryProps) {
   const { toast } = useToast();
-
-  const medications = [
-    {
-      id: 1,
-      name: "Paracetamol 500mg",
-      batch: "BATCH-001",
-      quantity: 450,
-      minStock: 100,
-      maxStock: 500,
-      expiryDate: "2025-12-31",
-      unitCost: "₹2.50",
-      status: "optimal",
-    },
-    {
-      id: 2,
-      name: "Amoxicillin 250mg",
-      batch: "BATCH-002",
-      quantity: 45,
-      minStock: 100,
-      maxStock: 300,
-      expiryDate: "2025-06-15",
-      unitCost: "₹8.00",
-      status: "low",
-    },
-    {
-      id: 3,
-      name: "Metformin 500mg",
-      batch: "BATCH-003",
-      quantity: 280,
-      minStock: 150,
-      maxStock: 400,
-      expiryDate: "2025-09-30",
-      unitCost: "₹1.50",
-      status: "optimal",
-    },
-    {
-      id: 4,
-      name: "Atorvastatin 20mg",
-      batch: "BATCH-004",
-      quantity: 82,
-      minStock: 100,
-      maxStock: 250,
-      expiryDate: "2025-03-20",
-      unitCost: "₹15.00",
-      status: "critical",
-    },
-    {
-      id: 5,
-      name: "Lisinopril 10mg",
-      batch: "BATCH-005",
-      quantity: 320,
-      minStock: 100,
-      maxStock: 400,
-      expiryDate: "2026-01-15",
-      unitCost: "₹12.00",
-      status: "optimal",
-    },
-    {
-      id: 6,
-      name: "Omeprazole 20mg",
-      batch: "BATCH-006",
-      quantity: 95,
-      minStock: 100,
-      maxStock: 300,
-      expiryDate: "2025-05-10",
-      unitCost: "₹6.50",
-      status: "low",
-    },
-  ];
 
   const statusColors = {
     optimal: "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800",

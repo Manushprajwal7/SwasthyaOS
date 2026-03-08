@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 interface LivePulseProps {
   active?: boolean;
   color?: "teal" | "red" | "amber" | "green";
-  size?: "sm" | "md";
+  size?: "sm" | "md" | "lg";
   className?: string;
 }
 
@@ -27,6 +27,7 @@ const pulseColorConfig = {
 const sizeConfig = {
   sm: { dot: "h-2 w-2", ring: "h-4 w-4" },
   md: { dot: "h-3 w-3", ring: "h-6 w-6" },
+  lg: { dot: "h-4 w-4", ring: "h-8 w-8" },
 };
 
 export function LivePulse({

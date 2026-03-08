@@ -11,7 +11,7 @@ The AI Insights button in the top navigation bar now shows **real-time AI-genera
 ### 1. Real-Time Insight Generation
 
 - **Automatic**: Insights are generated when the panel opens
-- **AI-Powered**: Uses Gemini AI to analyze healthcare system status
+- **AI-Powered**: Uses Amazon Bedrock to analyze healthcare system status
 - **Contextual**: Provides relevant insights for current operations
 
 ### 2. Four Categories of Insights
@@ -82,7 +82,7 @@ The AI Insights button in the top navigation bar now shows **real-time AI-genera
 
 5. **Footer**
    - AI Engine version
-   - Powered by Gemini AI
+   - Powered by Amazon Bedrock
    - Last updated timestamp
 
 ## 🚀 How to Use
@@ -116,7 +116,7 @@ The AI Insights button in the top navigation bar now shows **real-time AI-genera
 
 1. **`lib/ai/insights-ai.ts`**
    - AI insight generation logic
-   - Gemini AI integration
+   - Amazon Bedrock integration
    - Fallback insights for offline mode
 
 2. **`app/api/ai/insights/route.ts`**
@@ -287,4 +287,4 @@ Priority: High
 **Status**: ✅ Complete and Production Ready  
 **Last Updated**: January 2026  
 **Version**: 1.0.0  
-**AI Provider**: Google Gemini Pro
+**AI Provider**: Amazon Bedrock (Claude 3 Sonnet)

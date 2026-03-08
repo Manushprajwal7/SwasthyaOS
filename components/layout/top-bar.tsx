@@ -2,9 +2,11 @@
 
 import React, { useState } from "react";
 import { Bell, Globe, User, LogOut, Lightbulb } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/language-context";
 import { languages } from "@/lib/i18n";
+import { SummariseReportButton } from "@/components/bedrock/summarise-report-button";
 import type { UserRole } from "./main-layout";
 
 interface TopBarProps {
@@ -54,6 +56,9 @@ export function TopBar({
 
       {/* Right Section: Language, Role, User */}
       <div className="flex items-center gap-3">
+        {/* Bedrock Summary Report */}
+        <SummariseReportButton />
+
         {/* AI Insights Toggle */}
         <button
           onClick={() => onShowRightPanel(true)}
@@ -169,10 +174,10 @@ export function TopBar({
           {showUserMenu && (
             <div className="absolute right-0 z-50 mt-2 w-48 rounded-lg border border-border bg-card shadow-lg">
               <div className="px-4 py-2 text-sm">
-                <p className="font-semibold">
-                  {t(`role.${userRole}` as keyof typeof t)}
+                <p className={cn("font-semibold", userRole === 'admin' ? "text-primary" : "text-amber-600")}>
+                  {t(`role.${userRole}` as any)}
                 </p>
-                <p className="text-xs text-muted-foreground">Active User</p>
+                <p className="text-xs text-muted-foreground">{t("system.active_user")}</p>
               </div>
               <div className="border-t border-border px-4 py-2">
                 <button className="flex w-full items-center gap-2 text-sm text-muted-foreground hover:text-foreground">

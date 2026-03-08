@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BarChart3, TrendingUp, Users } from 'lucide-react';
@@ -10,6 +10,40 @@ interface PerformanceReportsProps {
 }
 
 export function PerformanceReports({ dateRange }: PerformanceReportsProps) {
+  const [generatingReport, setGeneratingReport] = useState<string | null>(null);
+
+  const handleGenerateCustomReport = async (reportType: string) => {
+    setGeneratingReport(reportType);
+    try {
+      console.log(`Generating ${reportType}...`);
+      // Simulate API call for generating performance report
+      const response = await fetch('/api/reports/performance/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          reportType,
+          dateRange 
+        })
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${reportType.toLowerCase().replace(/\s+/g, '-')}-${dateRange.start}-to-${dateRange.end}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        console.log(`${reportType} generated and downloaded`);
+      }
+    } catch (error) {
+      console.error('Report generation failed:', error);
+    } finally {
+      setGeneratingReport(null);
+    }
+  };
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">Performance & Operations Reports</h2>
@@ -165,9 +199,27 @@ export function PerformanceReports({ dateRange }: PerformanceReportsProps) {
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid gap-2 md:grid-cols-3">
-            <Button className="bg-primary hover:bg-primary-light">Monthly Performance Report</Button>
-            <Button variant="outline">Quarterly Analysis</Button>
-            <Button variant="outline">Annual Summary</Button>
+            <Button 
+              className="bg-primary hover:bg-primary-light" 
+              onClick={() => handleGenerateCustomReport('Monthly Performance Report')}
+              disabled={generatingReport === 'Monthly Performance Report'}
+            >
+              {generatingReport === 'Monthly Performance Report' ? 'Generating...' : 'Monthly Performance Report'}
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => handleGenerateCustomReport('Quarterly Analysis')}
+              disabled={generatingReport === 'Quarterly Analysis'}
+            >
+              {generatingReport === 'Quarterly Analysis' ? 'Generating...' : 'Quarterly Analysis'}
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => handleGenerateCustomReport('Annual Summary')}
+              disabled={generatingReport === 'Annual Summary'}
+            >
+              {generatingReport === 'Annual Summary' ? 'Generating...' : 'Annual Summary'}
+            </Button>
           </div>
         </CardContent>
       </Card>

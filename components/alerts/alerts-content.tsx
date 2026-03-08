@@ -5,11 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { AlertCircle, AlertTriangle, Info, CheckCircle, Trash2, Calendar, Clock, BellRing, Activity } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/language-context";
 import { LivePulse } from "@/components/ui/live-pulse";
 import { AWSBadge } from "@/components/ui/aws-badge";
 
 export function AlertsContent() {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [dateStr, setDateStr] = useState("");
   const [timeStr, setTimeStr] = useState("");
 
@@ -133,7 +135,7 @@ export function AlertsContent() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in-up">
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold text-foreground font-heading">
-            Emergency & Alert Center
+            {t("alerts.title")}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground flex items-center gap-2">
             <Calendar className="h-3.5 w-3.5" />
@@ -145,8 +147,8 @@ export function AlertsContent() {
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-2 text-xs text-muted-foreground bg-purple-50 dark:bg-purple-950/30 px-3 py-1.5 rounded-full border border-purple-200 dark:border-purple-800">
-            <LivePulse active color="purple" size="sm" />
-            <span>Event Streaming</span>
+            <LivePulse active color="teal" size="sm" />
+            <span>{t("alerts.sync")}</span>
           </div>
           <AWSBadge service="EventBridge" status="active" />
         </div>
@@ -162,48 +164,48 @@ export function AlertsContent() {
           <Card className="bg-slate-50 dark:bg-slate-900 border-border shadow-sm border-l-2 border-l-red-500">
             <CardHeader className="pb-2 p-4">
               <CardTitle className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-2">
-                Critical Alerts
+                {t("alerts.metric.critical")}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 pt-0">
               <div className="text-2xl font-bold font-heading text-red-600 dark:text-red-500">{criticalCount}</div>
-              <p className="text-[11px] font-medium text-red-500/80 mt-1">Requires immediate action</p>
+              <p className="text-[11px] font-medium text-red-500/80 mt-1">{t("alerts.metric.immediate")}</p>
             </CardContent>
           </Card>
 
           <Card className="bg-slate-50 dark:bg-slate-900 border-border shadow-sm border-l-2 border-l-indigo-500">
             <CardHeader className="pb-2 p-4">
               <CardTitle className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-2">
-                Unread Notifications
+                {t("alerts.metric.unread")}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 pt-0">
               <div className="text-2xl font-bold font-heading text-slate-800 dark:text-slate-100">{unreadCount}</div>
-              <p className="text-[11px] font-medium text-indigo-500/80 mt-1">Awaiting review</p>
+              <p className="text-[11px] font-medium text-indigo-500/80 mt-1">{t("alerts.metric.awaiting")}</p>
             </CardContent>
           </Card>
 
           <Card className="bg-slate-50 dark:bg-slate-900 border-border shadow-sm">
             <CardHeader className="pb-2 p-4">
               <CardTitle className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-2">
-                Total Alerts
+                {t("alerts.metric.total")}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 pt-0">
                <div className="text-2xl font-bold font-heading text-slate-800 dark:text-slate-100">{alerts.length}</div>
-              <p className="text-[11px] font-medium text-slate-500 mt-1">All-time record</p>
+              <p className="text-[11px] font-medium text-slate-500 mt-1">{t("alerts.metric.record")}</p>
             </CardContent>
           </Card>
 
           <Card className="bg-slate-50 dark:bg-slate-900 border-border shadow-sm border-l-2 border-l-emerald-500">
             <CardHeader className="pb-2 p-4">
               <CardTitle className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-2">
-                Response Time
+                {t("alerts.metric.response")}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 pt-0">
               <div className="text-2xl font-bold font-heading text-slate-800 dark:text-slate-100">2.3m</div>
-              <p className="text-[11px] font-medium text-emerald-500 mt-1">Average resolution speed</p>
+              <p className="text-[11px] font-medium text-emerald-500 mt-1">{t("alerts.metric.average")}</p>
             </CardContent>
           </Card>
         </div>
@@ -216,8 +218,8 @@ export function AlertsContent() {
              {alerts.length === 0 ? (
                <div className="h-64 flex flex-col items-center justify-center p-12 text-center bg-slate-50 dark:bg-slate-900 rounded-xl border border-dashed border-border shadow-sm">
                 <BellRing className="h-10 w-10 text-slate-300 dark:text-slate-600 mb-4" />
-                <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300">All Caught Up!</h3>
-                <p className="text-sm text-slate-500 mt-1">You have no active alerts in your queue.</p>
+                <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300">{t("alerts.empty.title")}</h3>
+                <p className="text-sm text-slate-500 mt-1">{t("alerts.empty.subtitle")}</p>
                </div>
              ) : (
                alerts.map((alert) => (
@@ -265,7 +267,7 @@ export function AlertsContent() {
                           variant="ghost"
                           className="h-8 w-8 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-emerald-900/30"
                           onClick={() => handleMarkAsRead(alert.id)}
-                          title="Mark as read"
+                          title={t("alerts.mark_read")}
                         >
                           <CheckCircle className="h-4 w-4" />
                         </Button>
@@ -275,7 +277,7 @@ export function AlertsContent() {
                         variant="ghost"
                         className="h-8 w-8 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30"
                         onClick={() => handleDelete(alert.id)}
-                        title="Delete Alert"
+                        title={t("alerts.delete")}
                       >
                         <Trash2 className="h-4 w-4 text-slate-400 hover:text-red-500 transition-colors" />
                       </Button>
@@ -296,7 +298,7 @@ export function AlertsContent() {
                         }}
                       >
                         <Activity className="h-3 w-3 mr-1.5" />
-                        BEGIN INTERVENTION
+                        {t("alerts.begin_intervention")}
                       </Button>
                       <Button 
                         size="sm" 
@@ -306,7 +308,7 @@ export function AlertsContent() {
                           toast({ description: "Opening extensive case details..."});
                         }}
                       >
-                        View Full Report
+                        {t("alerts.view_report")}
                       </Button>
                     </div>
                   )}
@@ -327,14 +329,14 @@ export function AlertsContent() {
             className="w-full gap-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 dark:text-slate-900 text-white shadow-sm h-12 text-sm font-bold tracking-wide transition-all disabled:opacity-50"
           >
             <CheckCircle className="h-4 w-4" />
-            MARK ALL AS READ
+            {t("alerts.mark_all")}
           </Button>
 
           <Card className="flex flex-col shadow-sm border border-border bg-white dark:bg-slate-900 relative">
              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-purple-400 via-pink-400 to-rose-400 opacity-90" />
              <CardHeader className="p-5 pt-6 pb-2">
-               <CardTitle className="text-sm font-bold tracking-tight">System Reliability</CardTitle>
-               <CardDescription className="text-xs">Alert trends over 30 days</CardDescription>
+               <CardTitle className="text-sm font-bold tracking-tight">{t("alerts.reliability")}</CardTitle>
+               <CardDescription className="text-xs">{t("alerts.trends")}</CardDescription>
              </CardHeader>
              <CardContent className="p-5 space-y-5">
                {[
