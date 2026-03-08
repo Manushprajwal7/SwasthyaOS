@@ -45,6 +45,7 @@ export function ClinicianWorkspaceContent() {
   const [patient, setPatient] = useState<any>(null);
   const [history, setHistory] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDemoMode, setIsDemoMode] = useState(false);
 
   React.useEffect(() => {
     async function loadActiveSession() {
@@ -52,11 +53,34 @@ export function ClinicianWorkspaceContent() {
         const res = await fetch("/api/clinician/active", { cache: "no-store" });
         if (res.ok) {
           const data = await res.json();
-          setPatient(data.patient);
-          setHistory(data.history || []);
+          console.log("Clinician API Response:", data);
+          
+          // Handle demo mode - show demo patient if available
+          if (data.status === "demo" && data.patient) {
+            setPatient(data.patient);
+            setHistory(data.history || []);
+            setIsDemoMode(true);
+          } else if (data.patient) {
+            setPatient(data.patient);
+            setHistory(data.history || []);
+            setIsDemoMode(false);
+          } else {
+            // No patient in any mode
+            setPatient(null);
+            setHistory([]);
+            setIsDemoMode(false);
+          }
+        } else {
+          console.error("API response not ok:", res.status, res.statusText);
+          setPatient(null);
+          setHistory([]);
+          setIsDemoMode(false);
         }
       } catch (err) {
         console.error("Failed to fetch active clinician session", err);
+        setPatient(null);
+        setHistory([]);
+        setIsDemoMode(false);
       } finally {
         setIsLoading(false);
       }
@@ -78,10 +102,51 @@ export function ClinicianWorkspaceContent() {
   if (!patient) {
     return (
       <div className="p-6 lg:p-8 space-y-6 max-w-full flex items-center justify-center min-h-[60vh]">
-         <div className="text-center">
-            <h2 className="text-xl font-semibold mb-2 text-foreground">{t("clinician.no_patient")}</h2>
-            <p className="text-muted-foreground mb-4 text-sm">{t("clinician.waiting")}</p>
-            <Button variant="outline" onClick={() => window.location.reload()}>{t("clinician.refresh")}</Button>
+         <div className="text-center max-w-md">
+            <div className="mb-6">
+              <Stethoscope className="h-16 w-16 mx-auto text-muted-foreground/50" />
+            </div>
+            <h2 className="text-xl font-semibold mb-2 text-foreground">
+              {isDemoMode ? "No Demo Patient Active" : t("clinician.no_patient")}
+            </h2>
+            <p className="text-muted-foreground mb-6 text-sm">
+              {isDemoMode ? "Click 'Load Demo Patient' to see the clinician interface in action" : t("clinician.waiting")}
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button variant="outline" onClick={() => window.location.reload()}>
+                {t("clinician.refresh")}
+              </Button>
+              <Button 
+                onClick={async () => {
+                  // Load demo patient directly
+                  try {
+                    const res = await fetch("/api/clinician/active", { cache: "no-store" });
+                    if (res.ok) {
+                      const data = await res.json();
+                      if (data.status === "demo" && data.patient) {
+                        setPatient(data.patient);
+                        setHistory(data.history || []);
+                        setIsDemoMode(true);
+                        toast({
+                          title: "Demo Patient Loaded",
+                          description: "Showing demo patient for demonstration purposes",
+                        });
+                      }
+                    }
+                  } catch (err) {
+                    console.error("Failed to load demo patient:", err);
+                  }
+                }}
+              >
+                <User className="h-4 w-4 mr-2" />
+                Load Demo Patient
+              </Button>
+            </div>
+            
+            <p className="text-xs text-muted-foreground mt-4">
+              Demo mode: Showing sample data for demonstration
+            </p>
          </div>
       </div>
     );
@@ -104,6 +169,12 @@ export function ClinicianWorkspaceContent() {
             <LivePulse active color="green" size="sm" />
             <span>{t("clinician.session_active")}</span>
           </div>
+          {isDemoMode && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground bg-amber-50 dark:bg-amber-950/30 px-3 py-1.5 rounded-full border border-amber-200 dark:border-amber-800">
+              <User className="h-3 w-3" />
+              <span>Demo Mode</span>
+            </div>
+          )}
           <AWSBadge service="Transcribe" model="Medical" status="active" />
         </div>
       </div>
