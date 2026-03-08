@@ -1,0 +1,22 @@
+# AWS Configuration
+AWS_REGION=ap-south-1
+
+# Local Development Only (DO NOT use in production)
+# Access_Key_ID=your_access_key_here
+# Secret_Access_Key=your_secret_key_here
+
+# DynamoDB Table Names
+DYNAMODB_TABLE_PATIENTS=Swasthya_Patients
+DYNAMODB_TABLE_APPOINTMENTS=Swasthya_Appointments
+DYNAMODB_TABLE_ALERTS=Swasthya_Alerts
+DYNAMODB_TABLE_AUDIT_LOGS=Swasthya_AuditLogs
+DYNAMODB_TABLE_AI_EVENTS=Swasthya_AIEvents
+DYNAMODB_TABLE_METRICS=Swasthya_Metrics
+DYNAMODB_TABLE_PATIENT_HISTORY=Swasthya_PatientHistory
+
+# S3 Bucket Names
+S3_BUCKET_DOCS=swasthya-clinical-documents
+
+# Amplify Environment (set automatically in production)
+AMPLIFY_ENV=production
+NODE_ENV=production
