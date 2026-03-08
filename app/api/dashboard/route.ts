@@ -1,39 +1,15 @@
 import { NextResponse } from "next/server";
 import { getDashboardData } from "@/lib/db/dashboard";
 import { getAllPatients } from "@/lib/db/patients";
+import { generateDemoMetrics, generateDemoAlerts, generateDemoAIEvents } from "@/lib/mock-data";
 
 export const dynamic = "force-dynamic";
 
 // Fallback data for when database is unavailable
 const getFallbackData = () => ({
-  alerts: [
-    {
-      id: "1",
-      type: "warning",
-      message: "Database connection temporarily unavailable",
-      timestamp: new Date().toISOString(),
-      severity: "medium"
-    }
-  ],
-  aiEvents: [
-    {
-      id: "1",
-      type: "system",
-      event: "Dashboard initialized with fallback data",
-      timestamp: new Date().toISOString(),
-      confidence: 0.95
-    }
-  ],
-  metrics: {
-    totalPatients: 0,
-    waitingPatients: 0,
-    avgWaitTime: 0,
-    bedOccupancy: 0,
-    aiRecommendations: 0,
-    acceptanceRate: 0,
-    criticalAlerts: 0,
-    consultationsToday: 0,
-  },
+  alerts: generateDemoAlerts(),
+  aiEvents: generateDemoAIEvents(),
+  metrics: generateDemoMetrics(),
   patients: []
 });
 
@@ -57,7 +33,8 @@ export async function GET() {
         aiEvents: dashboardData.aiEvents || getFallbackData().aiEvents,
         metrics: dashboardData.metrics || getFallbackData().metrics,
         patients: patients || [],
-        status: dashboardData?.metrics ? "success" : "fallback"
+        status: dashboardData?.metrics ? "success" : "demo",
+        lastUpdated: new Date().toISOString()
       },
       {
         headers: {
@@ -72,9 +49,10 @@ export async function GET() {
     const fallbackData = getFallbackData();
     return NextResponse.json(
       { 
-        ...fallbackData,
-        status: "error",
-        error: "Using fallback data due to database connectivity issues"
+        ...getFallbackData(),
+        status: "demo",
+        lastUpdated: new Date().toISOString(),
+        error: "Showing demo data - Database connection unavailable in production environment"
       },
       { status: 200 } // Return 200 with fallback data instead of 500
     );
